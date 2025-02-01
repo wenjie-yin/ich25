@@ -40,7 +40,7 @@ class MainLoop:
         for node in graph.get_adjacent(user):
             agent = node.get_agent()
             belief = llm.send_input(sentence, agent)
-           graph.set_belief(node, belief)
+            graph.set_belief(node, belief)
 
     async def main_loop(self):
         while True:
