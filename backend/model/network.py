@@ -36,7 +36,7 @@ class Network:
         # Initialise connectivity
         self.stochastic_network = Stochastic(self.N)
         self.adjacency_matrix = self.stochastic_network.adjacency_matrix
-        self.llm_agent = llm_agent.Agent(self.belief)
+        self.llm_agent = llm_agent.Agent()
 
     def get_certainties(self):
         return [ node.certainty for node in self.nodes ]
