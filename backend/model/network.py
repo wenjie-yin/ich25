@@ -5,13 +5,14 @@ import numpy as np
 import backend.llm_agent as llm_agent
 from collections import deque
 from backend.app.main import WorldState
+from backend.model.dynamics import Stochastic
+
 
 class FeedEntry:
 
     def __init__(self, message, agent):
         self.message = message
         self.agent = agent
-
 
 class Network:
     """Graph representation
@@ -35,9 +36,10 @@ class Network:
 
         # Initialise connectivity
         self.adjacency_matrix = np.random.uniform(0, 1, size=(N, N))
-
         self.llm_agent = llm_agent.Agent()
-
+        
+        # Initialise stochastic belief propagation network
+        self.stochastic_network = Stochastic(self.n_nodes)
 
     def filter_feed(self, node):
         agents = {i for i in self.get_adjacent(node)}
@@ -57,8 +59,16 @@ class Network:
         """Update certaintys through exchange of information
         across agent graph
         """
-        raise NotImplementedError
-    
+        # Put belief state into vector
+        network_state = np.array([node.get_certainty() for node in self.nodes])
+
+        # Update beliefs with stochastic network
+        new_network_state = self.stochastic_network.update(network_state)
+
+        # Update belief states in node objects
+        for i, new_certainty in enumerate(new_network_state):
+            self.nodes[i].set_certainty(new_certainty)
+
     def serialise(self) -> WorldState:
         return WorldState(
             matrix=self.adjacency_matrix.tolist(),
