@@ -17,9 +17,10 @@ class Agent:
 
 
     def update_certainty(self, belief: str, certainty: float, input: List[str]):
-        feed = ','.join(input)
-        prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
-            and you have read the following: \"{}\", how does your certainty change? \
+        barrier = '---'
+        feed = '\n'.join([barrier+'\n'+f for f in feed]+[barrier])
+        prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}. \
+            You have now read the following social media feed, with posts separated by dashed lines: \"{}\". How does your certainty change? \
                 Answer strictly in this format: \"<reason>. My certainty changes by <certainty>. \" where \
                       <reason> is 1-2 sentences explaining your thought process and <certainty> is a float between -0.3 and 0.3, representing how much your certainty goes up or down. ".format(belief, certainty, feed)
         response = self.model.invoke(prompt)
