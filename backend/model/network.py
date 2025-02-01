@@ -9,9 +9,9 @@ from backend.model.dynamics import Stochastic
 
 
 class FeedEntry:
-    def __init__(self, message, node):
+    def __init__(self, message, node_idx):
         self.message = message
-        self.node = node
+        self.node_index = node_index
 
 class Network:
     """Graph representation
@@ -27,32 +27,38 @@ class Network:
         """
         self.N = N
         self.belief = belief 
-        self.feed = deque(maxlength=N*4) #TODO: should we reset this every tick?
+        self.feed = deque(maxlen=N*4) #TODO: should we reset this every tick?
 
         # Initialise nodes
         inital_certaintys = np.random.randint(2, size=N)
         self.nodes = [Node(b) for b in inital_certaintys]
 
         # Initialise connectivity
-        self.adjacency_matrix = np.random.uniform(0, 1, size=(N, N))
-        self.llm_agent = llm_agent.Agent()
-        
-        # Initialise stochastic belief propagation network
-        self.stochastic_network = Stochastic(self.n_nodes)
+        self.stochastic_network = Stochastic(self.N)
+        self.adjacency_matrix = self.stochastic_network.adjacency_matrix
+        self.llm_agent = llm_agent.Agent(self.belief)
 
-    def filter_feed(self, node):
-        agents = {i for i in self.get_adjacent(node)}
-        return filter(lambda x: x.agent in agents, self.feed)
+    def get_certainties(self):
+        return [ node.certainty for node in self.nodes ]
+
+    def filter_feed(self, node_index) -> deque:
+        adjacent = self.get_adjacent(node_index)
+        return list(filter(lambda x: x.node_index == node_index, self.feed))
     
-
+    def get_adjacent(self, node_index):
+        idxs = np.arange(0, self.N)
+        idxs = idxs[idxs != i]
+        adjacencies = self.adjacency_matrix[node_index]
+        return [ i for i, w in zip(np.arange(0, self.N), adjacencies) if i != node_index and w == 1 ]
+    
     def update_with_user_input(self, message: str):
         """Update agent certaintys from user's message
         """
         self.feed.append(FeedEntry(message, None))
 
-        for node in self.nodes:
+        for i, node in enumerate(self.nodes):
+            node_feed = self.filter_feed(i)
             node._certainty = self.llm_agent.update_certainty(self.belief, node._certainty, self.feed)
-
 
     def update_with_agent_crosstalk(self):
         """Update certaintys through exchange of information
@@ -93,3 +99,4 @@ class Node:
     
     def set_certainty(value):
         self._certainty = value
+
