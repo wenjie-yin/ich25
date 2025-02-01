@@ -78,7 +78,7 @@ const onSubmit = async ({ validateResult, firstError }: { validateResult: boolea
     formParams.append('username', formData.value.username)
     formParams.append('password', formData.value.password)
 
-    const response = await axios.post('http://0.0.0.0:8000/token', 
+    const response = await axios.post('/api/token', 
       formParams,
       {
         timeout: 5000,
