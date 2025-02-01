@@ -2,7 +2,7 @@
 """
 
 import numpy as np
-import agent
+import backend.llm_agent as llm_agent
 from collections import deque
 from backend.app.main import WorldState
 
@@ -35,17 +35,22 @@ class Network:
 
         # Initialise connectivity
         self.adjacency_matrix = np.random.uniform(0, 1, size=(N, N))
+
+        self.llm_agent = llm_agent.Agent()
+
+
     def filter_feed(self, node):
         agents = {i for i in self.get_adjacent(node)}
         return filter(lambda x: x.agent in agents, self.feed)
     
+
     def update_with_user_input(self, message: str):
         """Update agent certaintys from user's message
         """
-        user = self.get_user()
-        for node in graph.get_adjacent(node):
-            agent.
+        self.feed.append(FeedEntry(message, None))
 
+        for node in self.nodes:
+            node._certainty = self.llm_agent.update_certainty(self.belief, node._certainty, self.feed)
 
 
     def update_with_agent_crosstalk(self):
@@ -62,9 +67,9 @@ class Network:
  
 
 class Node:
-    def __init__(self, initial_certainty, agent):
+    def __init__(self, initial_certainty):
         self._certainty = initial_certainty
-        self.agent = agent
+
 
     def get_agent(self):
         return self.agent
