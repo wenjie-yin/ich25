@@ -4,6 +4,7 @@ import llm
 import time
 import json
 import asyncio
+from backend.app import WorldState
 from backend.model.network import Network
 
 """
@@ -53,18 +54,13 @@ class MainLoop:
         """
         pass
 
-    """
-    async def main_loop(self):
-        while not self.terminate:
-            recv = asyncio.create_task(server.recv())
-            done = await asyncio.wait({recv}, timeout=self.timeout)
-            if recv in done:
-                if recv.exit: #TODO: if spread_belief takes a while might be nice to async waiting for this signal
-                    user = graph.get_user()
-                    self.propagate(recv.result(), user)
-            graph.spread_belief()
-            server.send(graph.serialise())
-    """
+    def get_world_state(self) -> WorldState:
+        matrix, beliefs = self.network.serialise()
+        return WorldState(
+            belief_vector=beliefs,
+            connectivity_matrix=matrix,
+        )
+
 
 
 if name == "__main__":

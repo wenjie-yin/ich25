@@ -9,7 +9,6 @@ from backend.model.dynamics import Stochastic
 
 
 class FeedEntry:
-
     def __init__(self, message, agent):
         self.message = message
         self.agent = agent
@@ -69,11 +68,10 @@ class Network:
         for i, new_certainty in enumerate(new_network_state):
             self.nodes[i].set_certainty(new_certainty)
 
-    def serialise(self) -> WorldState:
-        return WorldState(
-            matrix=self.adjacency_matrix.tolist(),
-            current_message=""
-        )
+    def serialise(self):
+        matrix = self.adjacency_matrix.tolist()
+        beliefs = [ node.get_certainty() for node in self.nodes ]
+        return matrix, beliefs
  
 
 class Node:
