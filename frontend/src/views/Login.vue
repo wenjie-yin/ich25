@@ -74,7 +74,7 @@ const onSubmit = async ({ validateResult, firstError }: { validateResult: boolea
 
   loading.value = true
   try {
-    const response = await axios.post('http://192.168.1.100:8000/api/login', {
+    const response = await axios.post('http://0.0.0.0:8000/token', {
       username: formData.value.username,
       password: formData.value.password,
     }, {
