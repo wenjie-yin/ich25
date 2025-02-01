@@ -29,17 +29,31 @@ propegate_graph:
     propegate user impact
 """
 
+class FeedEntry:
+
+    def __init__(self, sentence, agent):
+        self.sentence = sentence
+        self.agent = agent
+
 class MainLoop:
 
     def __init__(self):
         self.timeout = 5
         self.num_agents = 2
-        self.feed = deque(maxlength=self.num_agents)
+        self.feed = deque(maxlength=self.num_agents*4)
 
-    def propagate(self, sentence, user):
+    def filter_feed(self, node):
+        agents = {node.get_agent() for n in graph.get_adjacent(node)}
+        return filter(lambda x: x.agent in agents, self.feed)
+
+    def propagate_llm(self, sentence, user):
+        self.feed.appendleft(FeedEntry(sentence, user.get_agent()))
+        #TODO
+
+    def propagate_statistical(self, sentence, user):
         for node in graph.get_adjacent(user):
-            agent = node.get_agent()
-            belief = llm.send_input(sentence, agent)
+           agent = node.get_agent()
+           belief = llm.send_input(sentence, agent)
            graph.set_belief(node, belief)
 
     async def main_loop(self):
