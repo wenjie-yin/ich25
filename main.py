@@ -4,6 +4,7 @@ import llm
 import time
 import json
 import asyncio
+from collections import deque
 
 """
 initialise: n agents with random belief states and one player in graphs with adjacent connections (fully connected for now)
@@ -28,6 +29,13 @@ propegate_graph:
     propegate user impact
 """
 
+class Feed:
+
+    def __init__(self):
+        self.size = 5
+        self.feed = deque(maxlength=self.size)
+
+
 class MainLoop:
 
     def __init__(self):
@@ -38,7 +46,7 @@ class MainLoop:
         for node in graph.get_adjacent(user):
             agent = node.get_agent()
             belief = llm.send_input(sentance, agent)
-            node.set_belief(belief)
+            graph.set_belief(node, belief)
 
     async def main_loop(self):
         while True:
