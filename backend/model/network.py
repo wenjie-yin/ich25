@@ -9,9 +9,9 @@ from backend.model.dynamics import Stochastic
 
 
 class FeedEntry:
-    def __init__(self, message, agent):
+    def __init__(self, message, node):
         self.message = message
-        self.agent = agent
+        self.node = node
 
 class Network:
     """Graph representation
@@ -67,6 +67,11 @@ class Network:
         # Update belief states in node objects
         for i, new_certainty in enumerate(new_network_state):
             self.nodes[i].set_certainty(new_certainty)
+    
+    def update_feed(self):
+        for node in self.nodes:
+            post = self.llm_agent.write(self.belief, node._certainty, self.feed)
+            self.feed.append(FeedEntry(post, node))
 
     def serialise(self):
         matrix = self.adjacency_matrix.tolist()
