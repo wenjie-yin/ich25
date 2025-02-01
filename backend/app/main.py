@@ -179,6 +179,15 @@ async def get_world_state(current_user: User = Depends(get_current_user)):
     Retrieve the current state of the world matrix and last message
     """
     logger.info(f"User {current_user.username} requested world state")
+    # Generate random world state if not initialized
+        # Initialize with 5 nodes to match frontend expectations
+    belief_vector = np.random.uniform(0, 1, size=5).tolist()
+    connectivity_matrix = np.random.randint(0, 2, size=(5, 5)).tolist()
+    WORLD_STATE = WorldState(
+        belief_vector=belief_vector,
+        connectivity_matrix=connectivity_matrix,
+        current_message=""
+    )
     return WORLD_STATE
 
 @app.post("/chat")
