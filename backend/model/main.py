@@ -29,18 +29,12 @@ propegate_graph:
     propegate user impact
 """
 
-class Feed:
-
-    def __init__(self):
-        self.size = 5
-        self.feed = deque(maxlength=self.size)
-
-
 class MainLoop:
 
     def __init__(self):
         self.timeout = 5
         self.num_agents = 2
+        self.feed = deque(maxlength=self.num_agents)
 
     def propagate(self, sentence, user):
         for node in graph.get_adjacent(user):
