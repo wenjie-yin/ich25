@@ -74,38 +74,37 @@ const onSubmit = async ({ validateResult, firstError }: { validateResult: boolea
 
   loading.value = true
   try {
-    const response = await axios.post('http://0.0.0.0:8000/token', {
-      username: formData.value.username,
-      password: formData.value.password,
-    }, {
-      timeout: 5000,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      withCredentials: true
-    })
+    const formParams = new URLSearchParams()
+    formParams.append('username', formData.value.username)
+    formParams.append('password', formData.value.password)
+
+    const response = await axios.post('http://0.0.0.0:8000/token', 
+      formParams,
+      {
+        timeout: 5000,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    )
 
     if (response.data.access_token) {
       localStorage.setItem('token', response.data.access_token)
-      
       MessagePlugin.success('Login successful!')
-      
       router.push('/chat')
     } else {
       MessagePlugin.error('Invalid response from server')
     }
   } catch (error: any) {
     console.error('Full error object:', error)
-    console.error('Login error:', error)
-    
     if (error.code === 'ECONNABORTED') {
       MessagePlugin.error('Request timed out. Please try again.')
     } else if (error.response) {
       const message = error.response.data?.detail || 'Invalid credentials'
       MessagePlugin.error(message)
     } else if (error.request) {
-      MessagePlugin.error(error.message)
+      console.log(error.request)
+      MessagePlugin.error('Network error - please check if the server is running')
     } else {
       MessagePlugin.error('An error occurred. Please try again.')
     }

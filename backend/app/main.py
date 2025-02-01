@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 import logging
 import numpy as np
+from fastapi.middleware.cors import CORSMiddleware
 
 # Set up logging
 logging.basicConfig(
@@ -29,6 +30,15 @@ app = FastAPI(
     title="My FastAPI App",
     description="A FastAPI application with user authentication",
     version="1.0.0"
+)
+
+# Add this after creating the FastAPI app instance
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Less secure, but easier for development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Models
