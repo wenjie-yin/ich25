@@ -37,6 +37,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
+import axios from 'axios'
+import { MessagePlugin } from 'tdesign-vue-next'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -77,14 +79,43 @@ const sendMessage = async () => {
   // Scroll to bottom
   await scrollToBottom()
 
-  // Simulate response (replace with actual API call)
-  setTimeout(() => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      MessagePlugin.error('Not authenticated')
+      return
+    }
+
+    const response = await axios.post('http://0.0.0.0:8000/chat', 
+      { message: messages.value[messages.value.length - 1].content },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    // Add assistant's response
     messages.value.push({
       role: 'assistant',
-      content: 'This is a simulated response. Replace this with actual API integration.'
+      content: response.data.new_state.current_message || 'Message received'
     })
-    scrollToBottom()
-  }, 1000)
+
+    // Update graph visualization with new matrix data
+    // You can emit an event here to update the GraphVisualization component
+    // or use a state management solution like Pinia
+
+    await scrollToBottom()
+  } catch (error: any) {
+    console.error('Chat error:', error)
+    if (error.response?.status === 401) {
+      MessagePlugin.error('Session expired. Please login again.')
+      // Optionally redirect to login page
+    } else {
+      MessagePlugin.error('Failed to send message')
+    }
+  }
 }
 
 onMounted(() => {
