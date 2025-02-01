@@ -2,10 +2,10 @@
 """
 
 import numpy as np
-import backend.llm_agent as llm_agent
+import llm_agent
 from collections import deque
-from backend.app.main import WorldState
-from backend.model.dynamics import Stochastic
+from app import WorldState
+from model.dynamics import Stochastic
 
 
 class FeedEntry:
@@ -27,7 +27,7 @@ class Network:
         """
         self.N = N
         self.belief = belief 
-        self.feed = deque(maxlength=N*4) #TODO: should we reset this every tick?
+        self.feed = deque(maxlen=N*4) #TODO: should we reset this every tick?
 
         # Initialise nodes
         inital_certaintys = np.random.randint(2, size=N)
@@ -38,7 +38,7 @@ class Network:
         self.llm_agent = llm_agent.Agent()
         
         # Initialise stochastic belief propagation network
-        self.stochastic_network = Stochastic(self.n_nodes)
+        self.stochastic_network = Stochastic(N)
 
     def filter_feed(self, node):
         agents = {i for i in self.get_adjacent(node)}

@@ -8,7 +8,8 @@ if not os.environ.get("OPENAI_API_KEY"):
 
 model = ChatOpenAI(model="gpt-4o", temperature=0.5)
 
-with open("backend/llm_prompts/system.txt", "r") as f:
+print(os.getcwd())
+with open("llm_prompts/system.txt", "r") as f:
     SYSTEM_PROMPT = f.read()
 
 class Agent:
