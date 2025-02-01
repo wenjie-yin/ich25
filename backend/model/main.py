@@ -45,8 +45,8 @@ class MainLoop:
     def propagate(self, sentence, user):
         for node in graph.get_adjacent(user):
             agent = node.get_agent()
-            belief = llm.send_input(sentance, agent)
-            graph.set_belief(node, belief)
+            belief = llm.send_input(sentence, agent)
+           graph.set_belief(node, belief)
 
     async def main_loop(self):
         while True:
