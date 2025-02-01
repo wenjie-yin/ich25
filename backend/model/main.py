@@ -52,7 +52,7 @@ class MainLoop:
     def send_user_message(self, msg: str):
         """Send message from user to update network
         """
-        pass
+        self.network.update_with_user_input(msg)
 
     def get_world_state(self) -> WorldState:
         matrix, beliefs = self.network.serialise()
@@ -60,9 +60,3 @@ class MainLoop:
             belief_vector=beliefs,
             connectivity_matrix=matrix,
         )
-
-
-
-if name == "__main__":
-    main = MainLoop()
-    asyncio.run(main.main_loop())
