@@ -57,6 +57,16 @@ class ChatMessage(BaseModel):
 # Simulated database - Replace with real database in production
 fake_users_db = {}
 
+# Add a test user to the fake database
+fake_users_db["testuser"] = {
+    "username": "testuser",
+    "email": "test@example.com",
+    "full_name": "Test User",
+    "hashed_password": pwd_context.hash("password123")
+}
+
+
+
 # Initialize a dummy world state
 WORLD_STATE = WorldState(
     matrix=[[0, 1, 0], 
