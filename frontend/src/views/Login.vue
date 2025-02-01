@@ -74,19 +74,24 @@ const onSubmit = async ({ validateResult, firstError }: { validateResult: boolea
 
   loading.value = true
   try {
-    const response = await axios.post('http://192.168.1.100:8000/api/login', {
-      username: formData.value.username,
-      password: formData.value.password,
-    }, {
-      timeout: 5000, // 5 second timeout
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    // Create FormData object
+    const formParams = new URLSearchParams()
+    formParams.append('username', formData.value.username)
+    formParams.append('password', formData.value.password)
 
-    if (response.data.token) {
+    const response = await axios.post('http://0.0.0.0:8000/token', 
+      formParams.toString(),
+      {
+        timeout: 5000,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    )
+
+    if (response.data.access_token) { // Changed from token to access_token
       // Store the token in localStorage
-      localStorage.setItem('token', response.data.token)
+      localStorage.setItem('token', response.data.access_token)
       
       // Show success message
       MessagePlugin.success('Login successful!')
@@ -104,11 +109,11 @@ const onSubmit = async ({ validateResult, firstError }: { validateResult: boolea
       MessagePlugin.error('Request timed out. Please try again.')
     } else if (error.response) {
       // Server responded with error
-      const message = error.response.data?.message || 'Invalid credentials'
+      const message = error.response.data?.detail || 'Invalid credentials' // Changed from message to detail
       MessagePlugin.error(message)
     } else if (error.request) {
       // Request made but no response
-      MessagePlugin.error('Cannot connect to server. Please check your connection.')
+      MessagePlugin.error(error.message)
     } else {
       // Other errors
       MessagePlugin.error('An error occurred. Please try again.')
