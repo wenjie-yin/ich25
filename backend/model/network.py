@@ -2,6 +2,7 @@
 """
 
 import numpy as np
+from backend.app.main import WorldState
 
 class Network:
     """Graph representation
@@ -35,8 +36,11 @@ class Network:
         """
         raise NotImplementedError
     
-    def serialise(self):
-        raise NotImplementedError
+    def serialise(self) -> WorldState:
+        return WorldState(
+            matrix=self.adjacency_matrix.tolist(),
+            current_message=""
+        )
  
 
 class Node:
