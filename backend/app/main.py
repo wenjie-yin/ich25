@@ -173,34 +173,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to FastAPI!"}
-
-@app.get("/items/{item_id}")
-async def read_item(
-    item_id: int, 
-    q: Optional[str] = None, 
-    current_user: User = Depends(get_current_user)
-):
-    logger.info(f"User {current_user.username} accessed item {item_id}")
-    return {"item_id": item_id, "query": q, "owner": current_user.username}
-
-@app.post("/items/")
-async def create_item(
-    name: str, 
-    price: float, 
-    is_offer: bool = False,
-    current_user: User = Depends(get_current_user)
-):
-    logger.info(f"User {current_user.username} created item: {name}")
-    return {
-        "item_name": name, 
-        "price": price, 
-        "is_offer": is_offer,
-        "owner": current_user.username
-    }
-
 @app.get("/world", response_model=WorldState)
 async def get_world_state(current_user: User = Depends(get_current_user)):
     """
