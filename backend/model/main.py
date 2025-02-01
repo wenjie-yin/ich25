@@ -33,12 +33,6 @@ class MainLoop:
     def __init__(self):
         self.timeout = 5
 
-    def propagate_statistical(self, sentence, user):
-        for node in graph.get_adjacent(user):
-           agent = node.get_agent()
-           belief = llm.send_input(sentence, agent)
-           graph.set_belief(node, belief)
-
     async def main_loop(self):
         while True:
             recv = asyncio.create_task(server.recv())
