@@ -34,10 +34,10 @@ class MainLoop:
         self.timeout = 5
         self.num_agents = 2
 
-    def propegate(self, sentance, user):
+    def propagate(self, sentence, user):
         for node in graph.get_adjacent(user):
             agent = node.get_agent()
-            belief = llm.send_input(sentance, agent)
+            belief = llm.send_input(sentence, agent)
             node.set_belief(belief)
 
     async def main_loop(self):
@@ -47,9 +47,9 @@ class MainLoop:
             if recv in done:
                 if recv.exit: break #TODO: if spread_belief takes a while might be nice to async waiting for this signal
                 user = graph.get_user()
-                self.propegate(recv.result(), user)
+                self.propagate(recv.result(), user)
             graph.spread_belief()
-            server.send(graph.serialse())
+            server.send(graph.serialise())
 
 if name == "__main__":
     main = MainLoop()
