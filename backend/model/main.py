@@ -4,7 +4,6 @@ import llm
 import time
 import json
 import asyncio
-from collections import deque
 
 """
 initialise: n agents with random belief states and one player in graphs with adjacent connections (fully connected for now)
@@ -33,8 +32,6 @@ class MainLoop:
 
     def __init__(self):
         self.timeout = 5
-        self.num_agents = 2
-        self.feed = deque(maxlength=self.num_agents*4)
 
     def propagate_statistical(self, sentence, user):
         for node in graph.get_adjacent(user):
