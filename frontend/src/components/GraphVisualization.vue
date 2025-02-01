@@ -3,42 +3,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import Graph from 'graphology'
 import Sigma from 'sigma'
 
+const props = defineProps<{
+  beliefs: number[]
+  matrix: number[][]
+}>()
+
 const sigmaContainer = ref<HTMLElement | null>(null)
 let sigma: any = null
-let intervalId: number | null = null
+let previousCamera = { x: 0, y: 0, ratio: 1 }
 
-// Multiple dummy states
-const dummyStates = [
-  [
-    [0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 0],
-    [0, 1, 0, 1, 1],
-    [1, 0, 1, 0, 1],
-    [0, 0, 1, 1, 0]
-  ],
-  [
-    [0, 1, 1, 0, 0],
-    [1, 0, 0, 1, 1],
-    [1, 0, 0, 1, 0],
-    [0, 1, 1, 0, 1],
-    [0, 1, 0, 1, 0]
-  ],
-  [
-    [0, 0, 1, 1, 1],
-    [0, 0, 1, 0, 1],
-    [1, 1, 0, 0, 0],
-    [1, 0, 0, 0, 1],
-    [1, 1, 0, 1, 0]
-  ]
-]
+// Helper function to convert belief value to color
+const beliefToColor = (belief: number): string => {
+  // Ensure belief is between 0 and 1
+  belief = Math.max(0, Math.min(1, belief))
+  
+  // Convert to RGB
+  const r = Math.round(255 * (1 - belief))
+  const g = Math.round(255 * belief)
+  const b = 0
+  
+  return `rgb(${r}, ${g}, ${b})`
+}
 
-const updateGraph = (matrix: number[][]) => {
+const updateGraph = () => {
   const graph = new Graph()
-  const n = matrix.length
+  const n = props.matrix.length
   const radius = 5
 
   // Create nodes in a circle
@@ -51,15 +44,15 @@ const updateGraph = (matrix: number[][]) => {
       x,
       y,
       size: 8,
-      label: `Node ${i}`,
-      color: '#1a73e8'
+      label: `Node ${i} (${props.beliefs[i].toFixed(2)})`,
+      color: beliefToColor(props.beliefs[i])
     })
   }
 
   // Add edges based on matrix
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      if (matrix[i][j] === 1) {
+      if (props.matrix[i][j] === 1) {
         graph.addEdge(`n${i}`, `n${j}`, {
           size: 2,
           color: '#666'
@@ -68,8 +61,14 @@ const updateGraph = (matrix: number[][]) => {
     }
   }
 
-  // Kill previous sigma instance if it exists
+  // Store current camera state if sigma exists
   if (sigma) {
+    const camera = sigma.getCamera()
+    previousCamera = {
+      x: camera.x,
+      y: camera.y,
+      ratio: camera.ratio
+    }
     sigma.kill()
   }
 
@@ -82,28 +81,24 @@ const updateGraph = (matrix: number[][]) => {
       minCameraRatio: 0.2,
       maxCameraRatio: 2,
     })
+
+    // Restore previous camera state
+    const camera = sigma.getCamera()
+    camera.setState(previousCamera)
   }
 }
 
-onMounted(() => {
-  let currentStateIndex = 0
-  
-  // Initial graph
-  updateGraph(dummyStates[currentStateIndex])
+// Watch for changes in props
+watch(() => props.beliefs, updateGraph, { deep: true })
+watch(() => props.matrix, updateGraph, { deep: true })
 
-  // Update graph every 3 seconds
-  intervalId = window.setInterval(() => {
-    currentStateIndex = (currentStateIndex + 1) % dummyStates.length
-    updateGraph(dummyStates[currentStateIndex])
-  }, 3000)
+onMounted(() => {
+  updateGraph()
 })
 
 onUnmounted(() => {
   if (sigma) {
     sigma.kill()
-  }
-  if (intervalId !== null) {
-    clearInterval(intervalId)
   }
 })
 </script>

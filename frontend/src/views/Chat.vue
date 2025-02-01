@@ -1,15 +1,19 @@
 <template>
   <div class="chat-container">
-    <div class="chat-content">
-      <div class="messages" ref="messagesContainer">
-        <div v-for="(message, index) in messages" :key="index" class="message" :class="message.role">
-          <div class="message-content">
-            <t-avatar class="avatar" :image="message.role === 'user' ? userAvatar : botAvatar" />
-            <div class="text">{{ message.content }}</div>
+    <!-- Left Column -->
+    <div class="left-column">
+      <!-- Message History -->
+      <div class="message-history">
+        <h2>Message History</h2>
+        <div class="message-list">
+          <div v-for="(message, index) in messages" :key="index" class="message-item">
+            <div class="message-time">{{ message.time }}</div>
+            <div class="message-content">{{ message.content }}</div>
           </div>
         </div>
       </div>
-      
+
+      <!-- Message Input -->
       <div class="input-area">
         <div class="input-container">
           <t-textarea
@@ -27,8 +31,36 @@
             Send
           </t-button>
         </div>
-        <div class="input-footer">
-          Free Research Preview. ChatGPT may produce inaccurate information.
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-column">
+      <!-- Graph Visualization -->
+      <div class="graph-section">
+        <GraphVisualization 
+          :beliefs="worldState.belief_vector"
+          :matrix="worldState.connectivity_matrix"
+        />
+      </div>
+
+      <!-- Scoreboard -->
+      <div class="scoreboard">
+        <h2>Node Beliefs</h2>
+        <div class="belief-list">
+          <div v-for="(belief, index) in worldState.belief_vector" :key="index" class="belief-item">
+            <div class="node-label">Node {{ index }}</div>
+            <div class="belief-bar-container">
+              <div 
+                class="belief-bar" 
+                :style="{ 
+                  width: `${belief * 100}%`,
+                  backgroundColor: beliefToColor(belief)
+                }"
+              ></div>
+              <span class="belief-value">{{ (belief * 100).toFixed(1) }}%</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -36,48 +68,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { MessagePlugin } from 'tdesign-vue-next'
+import GraphVisualization from '../components/GraphVisualization.vue'
 
 interface Message {
-  role: 'user' | 'assistant'
   content: string
+  time: string
 }
 
-const messages = ref<Message[]>([
-  {
-    role: 'assistant',
-    content: 'Hello! How can I help you today?'
-  }
-])
+interface WorldState {
+  belief_vector: number[]
+  connectivity_matrix: number[][]
+  current_message: string
+}
 
 const newMessage = ref('')
-const messagesContainer = ref<HTMLElement | null>(null)
-const userAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'
-const botAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=gpt'
+const messages = ref<Message[]>([])
+const worldState = ref<WorldState>({
+  belief_vector: [0, 0, 0, 0, 0],  // Initial state with 5 nodes
+  connectivity_matrix: [
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0]
+  ],
+  current_message: ''
+})
 
-const scrollToBottom = async () => {
-  await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
+let pollInterval: number | null = null
+
+const beliefToColor = (belief: number): string => {
+  belief = Math.max(0, Math.min(1, belief))
+  const r = Math.round(255 * (1 - belief))
+  const g = Math.round(255 * belief)
+  const b = 0
+  return `rgb(${r}, ${g}, ${b})`
 }
 
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return
-
-  // Add user message
-  messages.value.push({
-    role: 'user',
-    content: newMessage.value.trim()
-  })
-
-  // Clear input
-  newMessage.value = ''
-
-  // Scroll to bottom
-  await scrollToBottom()
 
   try {
     const token = localStorage.getItem('token')
@@ -86,8 +118,8 @@ const sendMessage = async () => {
       return
     }
 
-    const response = await axios.post('http://0.0.0.0:8000/chat', 
-      { message: messages.value[messages.value.length - 1].content },
+    await axios.post('http://0.0.0.0:8000/chat', 
+      { message: newMessage.value.trim() },
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -96,96 +128,222 @@ const sendMessage = async () => {
       }
     )
 
-    // Add assistant's response
-    messages.value.push({
-      role: 'assistant',
-      content: response.data.new_state.current_message || 'Message received'
+    // Add message to history
+    messages.value.unshift({
+      content: newMessage.value.trim(),
+      time: new Date().toLocaleTimeString()
     })
 
-    // Update graph visualization with new matrix data
-    // You can emit an event here to update the GraphVisualization component
-    // or use a state management solution like Pinia
+    // Clear input after successful send
+    newMessage.value = ''
 
-    await scrollToBottom()
   } catch (error: any) {
     console.error('Chat error:', error)
     if (error.response?.status === 401) {
       MessagePlugin.error('Session expired. Please login again.')
-      // Optionally redirect to login page
     } else {
       MessagePlugin.error('Failed to send message')
     }
   }
 }
 
+const fetchWorldState = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) return
+
+    const response = await axios.get('http://0.0.0.0:8000/world', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    worldState.value = response.data
+  } catch (error) {
+    console.error('Failed to fetch world state:', error)
+    // Keep previous state on error
+  }
+}
+
 onMounted(() => {
-  scrollToBottom()
+  // Fetch initial state
+  fetchWorldState()
+  
+  // Start polling every 3 seconds
+  pollInterval = window.setInterval(fetchWorldState, 3000)
+})
+
+onUnmounted(() => {
+  if (pollInterval !== null) {
+    clearInterval(pollInterval)
+  }
 })
 </script>
 
 <style scoped>
+/* Reset any default margins that might cause scrolling */
+:deep(*) {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .chat-container {
   display: flex;
-  flex-direction: column;
   height: 100vh;
-  background-color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  gap: 24px;
+  background-color: #f8f9fa;
+  padding: 16px;
+  box-sizing: border-box;
+  position: fixed; /* Ensure container stays fixed */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden; /* Prevent any scrolling */
 }
 
-.chat-content {
+.left-column {
+  flex: 0 0 400px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
   height: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  width: 100%;
+  min-height: 0; /* Allow flex items to shrink below content size */
 }
 
-.messages {
-  flex-grow: 1;
+.right-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.message-history {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow container to shrink */
+}
+
+.message-history h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.message-list {
+  flex: 1;
   overflow-y: auto;
-  padding: 24px;
-  scroll-behavior: smooth;
+  padding: 0 16px;
+  margin: 0 -16px;
+  min-height: 0;
 }
 
-.message {
-  margin-bottom: 24px;
+.message-item {
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.message-time {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-bottom: 4px;
 }
 
 .message-content {
-  display: flex;
-  gap: 16px;
-  padding: 16px;
-  max-width: 100%;
-}
-
-.message.assistant {
-  background-color: rgba(247, 247, 248);
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-}
-
-.text {
-  font-size: 16px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  padding-right: 16px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
 }
 
 .input-area {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 24px;
-  background-color: #ffffff;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  height: 120px; /* Fixed height for input area */
+  display: flex;
+  flex-direction: column;
 }
 
 .input-container {
   position: relative;
-  max-width: 800px;
-  margin: 0 auto;
+  flex: 1;
+}
+
+.graph-section {
+  flex: 2;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Ensure graph doesn't overflow */
+}
+
+.scoreboard {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.scoreboard h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.belief-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.belief-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.node-label {
+  flex: 0 0 80px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.belief-bar-container {
+  flex: 1;
+  height: 24px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.belief-bar {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.belief-value {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.85);
 }
 
 :deep(.t-textarea) {
@@ -193,14 +351,8 @@ onMounted(() => {
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   padding: 8px 64px 8px 16px;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.5;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
-}
-
-:deep(.t-textarea:focus) {
-  box-shadow: 0 0 0 1px #000000;
-  border-color: #000000;
 }
 
 .send-button {
@@ -220,31 +372,5 @@ onMounted(() => {
 
 :deep(.send-button:disabled) {
   background-color: rgba(0, 0, 0, 0.1) !important;
-  cursor: not-allowed;
-}
-
-.input-footer {
-  text-align: center;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 12px;
-  margin-top: 12px;
-}
-
-/* Scrollbar styling */
-.messages::-webkit-scrollbar {
-  width: 8px;
-}
-
-.messages::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.messages::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-
-.messages::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.3);
 }
 </style> 
