@@ -4,12 +4,12 @@
 import numpy as np
 from collections import deque
 
-
 class FeedEntry:
 
     def __init__(self, message, agent):
         self.message = message
         self.agent = agent
+from backend.app.main import WorldState
 
 class Network:
     """Graph representation
@@ -49,8 +49,11 @@ class Network:
         """
         raise NotImplementedError
     
-    def serialise(self):
-        raise NotImplementedError
+    def serialise(self) -> WorldState:
+        return WorldState(
+            matrix=self.adjacency_matrix.tolist(),
+            current_message=""
+        )
  
 
 class Node:

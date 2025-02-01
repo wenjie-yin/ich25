@@ -8,8 +8,5 @@
 </script>
 
 <style scoped>
-nav {
-  display: flex;
-  gap: 1em;
-}
+
 </style>
