@@ -1,5 +1,7 @@
-"""Abstract network class
+"""Network Class
 """
+
+import numpy as np
 
 class Network:
     """Graph representation
@@ -12,29 +14,40 @@ class Network:
         Args:
             N : Number of nodes in network
         """
-        self.nodes = [Node() for _ in range(N)]
-    
-    def get_adjacent(self, node):
-        raise NotImplementedError
+        self.N = N
 
-    def get_belief(self, node):
-        """Get belief state of node
-        Args:
-            node : Node object
+        # Initialise nodes
+        inital_beliefs = np.random.randint(2, size=N)
+        nodes = [Node(b) for b in inital_beliefs]
+
+        # Initialise connectivity
+        adjacency_matrix = np.random.uniform(0, 1, size=(N, N))
+
+    
+    def update_with_user_input(self, message: str):
+        """Update agent beliefs from user's message
         """
         raise NotImplementedError
-    
-    def set_belief(self, node, belief):
-        """Set belief state of node
-        Args:
-            node: Node object
-            belief (float): Belief level
+
+    def update_with_agent_crosstalk(self):
+        """Update beliefs through exchange of information
+        across agent graph
         """
         raise NotImplementedError
     
     def serialise(self):
         raise NotImplementedError
+ 
+
+class Node:
+    def __init__(self, initial_belief):
+        self._belief = initial_belief
+
+    @property
+    def belief():
+        return
     
-    def spread_belief(self):
-        raise NotImplementedError
+    def set_belief(value):
+        self._belief = value
+    
 
