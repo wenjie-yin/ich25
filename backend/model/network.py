@@ -2,6 +2,7 @@
 """
 
 import numpy as np
+from backend.model.dynamics import Stochastic
 
 class Network:
     """Graph representation
@@ -9,21 +10,20 @@ class Network:
     entries b_i between 0 and 1.
     - The graph is a matrix... that's it.
     """
-    def __init__(self, N):
+    def __init__(self, n_nodes):
         """Initialise Network
         Args:
             N : Number of nodes in network
         """
-        self.N = N
+        self.n_nodes = n_nodes
 
         # Initialise nodes
-        inital_beliefs = np.random.randint(2, size=N)
-        nodes = [Node(b) for b in inital_beliefs]
+        self.inital_beliefs = np.random.randint(2, size=n_nodes)
+        self.nodes = [ Node(b) for b in inital_beliefs ]
 
-        # Initialise connectivity
-        adjacency_matrix = np.random.uniform(0, 1, size=(N, N))
+        # Initialise stochastic belief propagation network
+        self.stochastic_network = Stochastic(self.n_nodes)
 
-    
     def update_with_user_input(self, message: str):
         """Update agent beliefs from user's message
         """
@@ -33,8 +33,16 @@ class Network:
         """Update beliefs through exchange of information
         across agent graph
         """
-        raise NotImplementedError
-    
+        # Put belief state into vector
+        network_state = np.array([node.get_certainty() for node in self.nodes])
+
+        # Update beliefs with stochastic network
+        new_network_state = self.stochastic_network.update(network_state)
+
+        # Update belief states in node objects
+        for i, new_certainty in enumerate(new_network_state):
+            self.nodes[i].set_certainty(new_certainty)
+
     def serialise(self):
         raise NotImplementedError
  
@@ -44,10 +52,10 @@ class Node:
         self._belief = initial_belief
 
     @property
-    def belief():
+    def certainty():
         return
     
-    def set_belief(value):
+    def set_certainty(value):
         self._belief = value
     
 
