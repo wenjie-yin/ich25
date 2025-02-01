@@ -1,2 +1,12 @@
+<<<<<<< HEAD
 fastapi
 uvicorn
+=======
+fastapi>=0.68.0
+uvicorn>=0.15.0
+pydantic>=1.8.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.5
+numpy>=1.21.0
+>>>>>>> defb843 (dummy main with chat and world call)
