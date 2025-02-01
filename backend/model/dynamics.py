@@ -2,6 +2,7 @@
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Stochastic:
@@ -16,7 +17,8 @@ class Stochastic:
 
     def __init__(self, n: int):
         self.n_neurons = n
-        self.adjacency_matrix = np.random.randint(2, size=(n, n))
+        self.adjacency_matrix = np.random.uniform(0, 1, size=(n, n))
+        self.adjacency_matrix *= (1 - np.identity(n))
     
     def update(self, state):
         """Update state of the network given beliefs
@@ -26,25 +28,13 @@ class Stochastic:
             new_state: Updated beliefs
         """
         state_freeze = np.copy(state)
-        updates = np.zeros(self.n_neurons)
+        new_state = np.zeros(self.n_neurons)
         for i in range(self.n_neurons):
             for j in range(self.n_neurons):
                 p_exchange = self.adjacency_matrix[i,j]
-                comm = np.random.uniform(0, 1)
-                if p_exchange > comm:
-                    print(i, j, 'YANK', p_exchange)
-                    updates[i] = (state_freeze[i] + state_freeze[j])/2
+                comm = np.random.binomial(1, p_exchange, size=1)
+                if comm:
+                    new_state[i] = state_freeze[j]
         
-        return updates
+        return np.round(new_state)
 
-
-# Test
-state_0 = [1, 0]
-matrix = np.array([[0, 1], [0, 0]])
-
-S = Stochastic(2)
-S.adjacency_matrix = matrix
-
-print(S.adjacency_matrix)
-print('S0:', state_0)
-print('S1:', S.update(state_0))
