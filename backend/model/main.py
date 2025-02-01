@@ -1,10 +1,5 @@
-import graph
-import server
-import llm
 import time
-import json
-import asyncio
-from backend.app import WorldState
+from backend.app.main import WorldState
 from backend.model.network import Network
 
 """

@@ -80,7 +80,7 @@ class Network:
             self.feed.append(FeedEntry(post, node))
 
     def serialise(self):
-        matrix = self.adjacency_matrix.tolist()
+        matrix = self.adjacency_matrix.astype(int).tolist()
         beliefs = [ node.get_certainty() for node in self.nodes ]
         return matrix, beliefs
  
@@ -89,13 +89,11 @@ class Node:
     def __init__(self, initial_certainty):
         self._certainty = initial_certainty
 
-
     def get_agent(self):
         return self.agent
 
-    @property
-    def certainty():
-        return
+    def get_certainty(self):
+        return self._certainty
     
     def set_certainty(value):
         self._certainty = value
