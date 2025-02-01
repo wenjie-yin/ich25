@@ -3,12 +3,14 @@
 
 import numpy as np
 from collections import deque
+import agent
 
 class FeedEntry:
 
     def __init__(self, message, agent):
         self.message = message
         self.agent = agent
+
 from backend.app.main import WorldState
 
 class Network:
@@ -26,25 +28,28 @@ class Network:
         self.feed = deque(maxlength=N*4) #TODO: should we reset this every tick?
 
         # Initialise nodes
-        inital_beliefs = np.random.randint(2, size=N)
-        nodes = [Node(b) for b in inital_beliefs]
+        inital_certaintys = np.random.randint(2, size=N)
+        nodes = [Node(b) for b in inital_certaintys]
 
         # Initialise connectivity
         adjacency_matrix = np.random.uniform(0, 1, size=(N, N))
 
 
-    def filter_feed(self, agent):
-        agents =
+    def filter_feed(self, node):
+        agents = {i for i in self.get_adjacent(node)}
         return filter(lambda x: x.agent in agents, self.feed)
     
     def update_with_user_input(self, message: str):
-        """Update agent beliefs from user's message
+        """Update agent certaintys from user's message
         """
         user = self.get_user()
+        for node in graph.get_adjacent(node):
+            agent.
+
 
 
     def update_with_agent_crosstalk(self):
-        """Update beliefs through exchange of information
+        """Update certaintys through exchange of information
         across agent graph
         """
         raise NotImplementedError
@@ -57,15 +62,16 @@ class Network:
  
 
 class Node:
-    def __init__(self, initial_belief, agent):
-        self._belief = initial_belief
+    def __init__(self, initial_certainty, agent):
+        self._certainty = initial_certainty
         self.agent = agent
 
+    def get_agent(self):
+        return self.agent
+
     @property
-    def belief():
+    def certainty():
         return
     
-    def set_belief(value):
-        self._belief = value
-    
-
+    def set_certainty(value):
+        self._certainty = value
