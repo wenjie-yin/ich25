@@ -58,7 +58,8 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 class WorldState(BaseModel):
-    matrix: List[List[int]]
+    belief_vector: List[float]  # Level of belief for each node (0 to 1)
+    connectivity_matrix: List[List[int]]  # Adjacency matrix for node connections
     current_message: str = ""
 
 class ChatMessage(BaseModel):
@@ -79,9 +80,10 @@ fake_users_db["testuser"] = {
 
 # Initialize a dummy world state
 WORLD_STATE = WorldState(
-    matrix=[[0, 1, 0], 
-            [1, 0, 1], 
-            [0, 1, 0]],
+    belief_vector=[0.5, 0.7, 0.3],  # Example belief levels for 3 nodes
+    connectivity_matrix=[[0, 1, 0], 
+                        [1, 0, 1], 
+                        [0, 1, 0]],  # Example connectivity
     current_message=""
 )
 
@@ -220,15 +222,15 @@ async def send_chat(
     # Log the chat message
     logger.info(f"User {current_user.username} sent message: {chat.message}")
     
-    # Update the world state based on the chat message (dummy logic)
-    # This is where you'd put your actual world-changing logic
+    # Update the world state based on the chat message
     WORLD_STATE.current_message = chat.message
     
-    # Randomly modify the matrix (dummy example)
-    new_matrix = np.array(WORLD_STATE.matrix)
-    i, j = np.random.randint(0, len(new_matrix), 2)
-    new_matrix[i][j] = 1 if new_matrix[i][j] == 0 else 0
-    WORLD_STATE.matrix = new_matrix.tolist()
+    # Example logic: Update belief vector based on message
+    new_belief = np.array(WORLD_STATE.belief_vector)
+    # Randomly modify one belief value (dummy example)
+    i = np.random.randint(0, len(new_belief))
+    new_belief[i] = max(0, min(1, new_belief[i] + np.random.uniform(-0.1, 0.1)))
+    WORLD_STATE.belief_vector = new_belief.tolist()
     
     return {
         "message": "World state updated",
