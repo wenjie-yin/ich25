@@ -4,6 +4,7 @@ import llm
 import time
 import json
 import asyncio
+from backend.model.network import Network
 
 """
 initialise: n agents with random belief states and one player in graphs with adjacent connections (fully connected for now)
@@ -28,21 +29,43 @@ propegate_graph:
     propegate user impact
 """
 
+
+
 class MainLoop:
 
     def __init__(self):
-        self.timeout = 5
+        self.update_delay = 1
+        self.n_nodes = 10
 
+        # Initialise network
+        self.network = Network(self.n_nodes, belief="The earth is flat")
+
+        # Exit 
+        self.terminate = False
+
+    def game_loop(self):
+        while not self.terminate:
+            time.sleep(self.update_delay)
+            self.network.update_with_agent_crosstalk()
+    
+    def send_user_message(self, msg: str):
+        """Send message from user to update network
+        """
+        pass
+
+    """
     async def main_loop(self):
-        while True:
+        while not self.terminate:
             recv = asyncio.create_task(server.recv())
             done = await asyncio.wait({recv}, timeout=self.timeout)
             if recv in done:
-                if recv.exit: break #TODO: if spread_belief takes a while might be nice to async waiting for this signal
-                user = graph.get_user()
-                self.propagate(recv.result(), user)
+                if recv.exit: #TODO: if spread_belief takes a while might be nice to async waiting for this signal
+                    user = graph.get_user()
+                    self.propagate(recv.result(), user)
             graph.spread_belief()
             server.send(graph.serialise())
+    """
+
 
 if name == "__main__":
     main = MainLoop()
