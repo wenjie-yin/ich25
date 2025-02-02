@@ -77,7 +77,8 @@ class Network:
     def update_feed(self):
         for node in self.nodes:
             post = self.llm_agent.write(self.belief, node._certainty, self.feed)
-            self.feed.append(FeedEntry(post, node))
+            if post:
+                self.feed.append(FeedEntry(post, node))
 
     def serialise(self):
         matrix = self.adjacency_matrix.astype(int).tolist()
