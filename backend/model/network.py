@@ -30,7 +30,7 @@ class Network:
         self.feed = deque(maxlen=N*4) #TODO: should we reset this every tick?
 
         # Initialise nodes
-        inital_certaintys = np.random.randint(2, size=N)
+        inital_certaintys = np.random.uniform(0,1, size=N)
         self.nodes = [Node(b) for b in inital_certaintys]
 
         # Initialise connectivity
