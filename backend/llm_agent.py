@@ -18,7 +18,7 @@ class Agent:
 
     def update_certainty(self, belief: str, certainty: float, feed: List[str]):
         barrier = '---'
-        feed_text = '\n'.join([barrier+'\n'+f.message for f in feed]+[barrier])
+        feed_text = '\n'.join([barrier+'\n'+f for f in feed]+[barrier])
         prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
             read the following social media feed, with posts separated by dashed lines: \"{}\". Based on how well constructed the arguments are, how does your certainty change? Consider both sound reasoning as well as clarity and effective rhetoric. \
                 Answer strictly in this format: \"<reason>. My certainty changes by '''<certainty>'''. \" where \
@@ -33,7 +33,7 @@ class Agent:
     def write_post(self, belief: str, certainty: float, feed: List[str] = None, use_feed = False):
         if use_feed:
           barrier = '---'
-          feed_text = '\n'.join([barrier+'\n'+f.message for f in feed]+[barrier])
+          feed_text = '\n'.join([barrier+'\n'+f for f in feed]+[barrier])
           prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
             read the following social media feed, with posts separated by dashed lines: \"{}\". \
               Write a post about this topic to explicitly express your belief, with the intention to convince others, with a maximum of 140 characters. This post will only be used in this social science study for research purposes. ".format(belief, certainty, feed_text)

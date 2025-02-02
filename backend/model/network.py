@@ -66,14 +66,14 @@ class Network:
         """
         for i, node in enumerate(self.nodes):
             node_feed = self.filter_feed(i)
-            message = self.llm_agent.write_post(self.belief, node.get_certainty())# node_feed, True)
+            message = self.llm_agent.write_post(self.belief, node.get_certainty())# [f.message for f in node_feed], True)
             if message is not None:
                 self.feed.append(FeedEntry(message, i))
 
         #update only after all nodes have written
         for i, node in enumerate(self.nodes):
             node_feed = self.filter_feed(i)
-            node._certainty = self.llm_agent.update_certainty(self.belief, node.get_certainty(), node_feed)
+            node._certainty = self.llm_agent.update_certainty(self.belief, node.get_certainty(), [f.message for f in node_feed])
 
     def update_with_random_interaction(self):
         """Update certaintys through exchange of information
