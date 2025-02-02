@@ -335,21 +335,38 @@ onUnmounted(() => {
 
 .message-item {
   padding: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: #2a2a2a;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.message-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .message-time {
   font-size: 12px;
-  color: #eee;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.message-sender {
+  font-weight: 600;
+  color: #4a9eff;
   margin-bottom: 4px;
 }
 
 .message-content {
   font-size: 14px;
   color: #eee;
+  line-height: 1.4;
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  padding: 4px 0;
 }
 
 .input-area {
