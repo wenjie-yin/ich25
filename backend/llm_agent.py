@@ -20,7 +20,7 @@ class Agent:
         barrier = '---'
         feed_text = '\n'.join([barrier+'\n'+f for f in feed]+[barrier])
         prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
-            read the following social media feed, with posts separated by dashed lines: \"{}\". How does your certainty change, based on how well constructed the arguments are? \
+            read the following social media feed, with posts separated by dashed lines: \"{}\". Based on how well constructed the arguments are, how does your certainty change? Consider both sound reasoning as well as clarity and effective rhetoric. \
                 Answer strictly in this format: \"<reason>. My certainty changes by '''<certainty>'''. \" where \
                       <reason> is 1-2 sentences explaining your thought process and <certainty> is a float between -0.3 and 0.3, representing how much your certainty goes up or down. ".format(belief, certainty, feed_text)
         response = self.model.invoke(prompt)
