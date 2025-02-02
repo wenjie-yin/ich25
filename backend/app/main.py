@@ -96,17 +96,6 @@ fake_users_db["testuser"] = {
     "hashed_password": pwd_context.hash("password123")
 }
 
-
-
-# Initialize a dummy world state
-WORLD_STATE = WorldState(
-    belief_vector=[0.5, 0.7, 0.3],  # Example belief levels for 3 nodes
-    connectivity_matrix=[[0, 1, 0], 
-                        [1, 0, 1], 
-                        [0, 1, 0]],  # Example connectivity
-    current_message=""
-)
-
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -210,8 +199,8 @@ async def send_chat(
     """
     Send a chat message that affects the world state
     """
-    global WORLD_STATE
     main = get_main()
+    WORLD_STATE = main.get_world_state()
     # Log the chat message
     logger.info(f"User {current_user.username} sent message: {chat.message}")
     
