@@ -220,7 +220,7 @@ const fetchBelief = async () => {
   const response = await axios.get('http://0.0.0.0:8000/belief', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  belief.value = response.data.belief
+  belief.value = response.data
 }
 
 onMounted(() => {
