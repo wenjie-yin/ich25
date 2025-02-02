@@ -81,7 +81,7 @@ class Network:
                 self.feed.append(FeedEntry(post, node))
 
     def serialise(self):
-        matrix = self.adjacency_matrix.astype(int).tolist()
+        matrix = self.adjacency_matrix.tolist()
         beliefs = [ node.get_certainty() for node in self.nodes ]
         return matrix, beliefs
 
