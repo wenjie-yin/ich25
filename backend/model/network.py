@@ -52,11 +52,12 @@ class Network:
     def update_with_user_input(self, message: str):
         """Update agent certaintys from user's message
         """
-        self.feed.append(FeedEntry(message, None))
+        feed_entry = FeedEntry(message, None)
+        self.feed.append(feed_entry)
 
         for i, node in enumerate(self.nodes):
             node_feed = self.filter_feed(i)
-            node._certainty = self.llm_agent.update_certainty(self.belief, node._certainty, self.feed)
+            node._certainty = self.llm_agent.update_certainty(self.belief, node._certainty, [message])
 
     def update_with_agent_crosstalk(self):
         """Update certaintys through exchange of information
