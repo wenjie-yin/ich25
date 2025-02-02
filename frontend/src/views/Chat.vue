@@ -7,7 +7,7 @@
         <h2>Message History</h2>
         <div class="message-list">
           <div v-for="(message, index) in messages" :key="index" class="message-item">
-            <div class="message-time">{{ message.time }}</div>
+            <!-- <div class="message-time">{{ message.time }}</div> -->
             <div class="messege-sender">{{ message.sender }}</div>
             <div class="message-content">{{ message.content }}</div>
           </div>
@@ -163,7 +163,14 @@ const fetchWorldState = async () => {
     })
 
     worldState.value = response.data
-    console.log(worldState.value.belief_vector, worldState.value.connectivity_matrix)
+    const feeds = response.data.feed
+    for (var feed of feeds) {
+      messages.value.unshift({
+        content: feed.message,
+        time: feed.timeStamp,
+        sender: feed.sender
+      })
+    }
   } catch (error) {
     console.error('Failed to fetch world state:', error)
     // Keep previous state on error
