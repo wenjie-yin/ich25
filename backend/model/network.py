@@ -27,7 +27,7 @@ class Network:
         """
         self.N = N
         self.belief = belief 
-        self.feed = deque(maxlen=N*4) #TODO: should we reset this every tick?
+        self.feed = deque() #TODO: should we reset this every tick?
 
         # Initialise nodes
         inital_certaintys = np.random.uniform(0,1, size=N)
@@ -43,7 +43,7 @@ class Network:
 
     def filter_feed(self, node_index) -> deque:
         adjacent = self.get_adjacent(node_index)
-        return list(filter(lambda x: x.node_index == node_index, self.feed))
+        return list(filter(lambda x: x.node_index == node_index, self.feed))[:self.N]
     
     def get_adjacent(self, node_index):
         adjacencies = self.adjacency_matrix[node_index]
@@ -52,14 +52,25 @@ class Network:
     def update_with_user_input(self, message: str):
         """Update agent certaintys from user's message
         """
-        feed_entry = FeedEntry(message, None)
-        self.feed.append(feed_entry)
-
+        self.feed.append(FeedEntry(message, None))
         for i, node in enumerate(self.nodes):
-            node_feed = self.filter_feed(i)
-            node._certainty = self.llm_agent.update_certainty(self.belief, node._certainty, [message])
+            node._certainty = self.llm_agent.update_certainty(self.belief, node.certainty(), [message])
 
     def update_with_agent_crosstalk(self):
+        """Make agents talk to each other to update their beliefs
+        """
+        for i, node in enumerate(self.nodes):
+            node_feed = self.filter_feed(i)
+            message = self.llm_agent.write_post(self.belief, node.certainty()) #node_feed, true)
+            if message is not None:
+                self.feed.append(FeedEntry(message, node))
+
+        #update only after all nodes have written
+        for i, node in enumerate(self.nodes):
+            node_feed = self.filter_feed(i)
+            node._certainty = self.llm_agent.update_certainty(self.belief, node.certainty(), node_feed)
+
+    def update_with_random_interaction(self):
         """Update certaintys through exchange of information
         across agent graph
         """
@@ -87,21 +98,28 @@ class Network:
     def cluster(self):
         k1 = []; k2 = []; k3 = []
         for i, node in enumerate(self.nodes):
-            if node.certainty() < 0.33: k1.append((node,i))
-            elif node.certainty() >= 0.33 and node.certainty() < 0.66: k2.append((node,1))
-            else: k3.append((node,i))
+            if node.certainty() < 0.33: k1.append(i)
+            elif node.certainty() >= 0.33 and node.certainty() < 0.66: k2.append(i)
+            else: k3.append(i)
 
         self.form_connections(k1)
         self.form_connections(k2)
         self.form_connections(k3)
+        self.remove_connections(k1,k2)
 
     def form_connections(self, cluster):
-        for i, node in cluster:
-            for j, other in cluster:
+        for i in cluster:
+            for j in cluster:
                 if i == j or self.adjacency_matrix[i][j]: continue
                 if np.random.randint(0, 100) > 50:
                     self.adjacency_matrix[i][j] = 1
- 
+
+    def remove_connections(self, k1, k2):
+        for i in k1:
+            for j in k2:
+                if !self.adjusted_matrix[i][j]: continue
+                if np.random.randint(0, 100) > 50:
+                    self.adjacency_matrix[i][j] = 0
 
 class Node:
     def __init__(self, initial_certainty):
