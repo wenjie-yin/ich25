@@ -1,3 +1,10 @@
+import sys
+from pathlib import Path
+
+# Add the project root to Python path
+sys.path.append(str(Path(__file__).parent.parent))
+
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Optional, List, Dict
@@ -10,6 +17,7 @@ import numpy as np
 from model.main import MainLoop
 from app import WorldState
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 # Set up logging
 logging.basicConfig(
@@ -28,13 +36,26 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize MainLoop with context manager
+    main = MainLoop().__enter__()
+    # Store the main instance in app.state
+    app.state.main = main
+    yield  # Just yield without any value
+    # Cleanup
+    main.__exit__(None, None, None)
+
 app = FastAPI(
     title="My FastAPI App",
     description="A FastAPI application with user authentication",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
-main = MainLoop()
+# Get the MainLoop instance from the app state
+def get_main():
+    return app.state.main
 
 # Add this after creating the FastAPI app instance
 app.add_middleware(
@@ -177,8 +198,8 @@ async def get_world_state(current_user: User = Depends(get_current_user)):
     """
     Retrieve the current state of the world matrix and last message
     """
-    logger.info(f"User {current_user.username} requested world state")
-    return WORLD_STATE
+    main = get_main()
+    return main.get_world_state()
 
 @app.post("/chat")
 async def send_chat(
@@ -189,6 +210,7 @@ async def send_chat(
     Send a chat message that affects the world state
     """
     global WORLD_STATE
+    main = get_main()
     # Log the chat message
     logger.info(f"User {current_user.username} sent message: {chat.message}")
     
