@@ -18,7 +18,7 @@ const props = defineProps<{
 const sigmaContainer = ref<HTMLElement | null>(null)
 const particleCanvas = ref<HTMLCanvasElement | null>(null)
 let sigma: any = null
-let previousCamera = { x: 0, y: 0, ratio: 1 }
+let previousCamera = { x: 0.5, y: 0.5, ratio: 1.25 }
 let animationFrameId: number | null = null
 let particles: Array<{
   x: number
@@ -210,9 +210,6 @@ onMounted(() => {
     particleCanvas.value.width = sigmaContainer.value.clientWidth
     particleCanvas.value.height = sigmaContainer.value.clientHeight
   }
-
-  // Initialize with a fixed camera position
-  previousCamera = { x: 0.5, y: 0.5, ratio: 1.25 }
   updateGraph()
 })
 
