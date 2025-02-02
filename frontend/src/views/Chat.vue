@@ -116,9 +116,18 @@ const sendMessage = async () => {
       MessagePlugin.error('Not authenticated')
       return
     }
+    // Add message to history
+    messages.value.unshift({
+      content: newMessage.value.trim(),
+      time: new Date().toLocaleTimeString()
+    })
+    
+    const m = newMessage.value.trim()
 
+    // Clear input after successful send
+    newMessage.value = ''
     await axios.post('http://0.0.0.0:8000/chat', 
-      { message: newMessage.value.trim() },
+      { message: m },
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -127,14 +136,7 @@ const sendMessage = async () => {
       }
     )
 
-    // Add message to history
-    messages.value.unshift({
-      content: newMessage.value.trim(),
-      time: new Date().toLocaleTimeString()
-    })
-
-    // Clear input after successful send
-    newMessage.value = ''
+    
 
   } catch (error: any) {
     console.error('Chat error:', error)
