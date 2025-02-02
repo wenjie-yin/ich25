@@ -60,7 +60,7 @@ class MainLoop:
             time.sleep(self.update_delay)
             self.network.update_with_agent_crosstalk()
     
-    def send_user_message(self, msg: str):
+    async def send_user_message(self, msg: str):
         """Send message from user to update network
         """
         self.network.update_with_user_input(msg)
