@@ -1,6 +1,7 @@
 import time
 import json
 import asyncio
+import threading
 from app import WorldState
 from model.network import Network
 
@@ -36,8 +37,23 @@ class MainLoop:
         # Initialise network
         self.network = Network(self.n_nodes, belief="The earth is flat")
 
-        # Exit 
+        # Exit flag
         self.terminate = False
+        self._thread = None
+
+    def __enter__(self):
+        """Start the game loop in a separate thread when entering the context"""
+        self.terminate = False
+        self._thread = threading.Thread(target=self.game_loop)
+        self._thread.daemon = True  # Make thread daemon so it exits when main thread exits
+        self._thread.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Clean up when exiting the context"""
+        self.terminate = True
+        if self._thread:
+            self._thread.join()
 
     def game_loop(self):
         while not self.terminate:
