@@ -77,7 +77,7 @@ class MainLoop:
 
     def get_world_state(self) -> WorldState:
         matrix, beliefs = self.network.serialise()
-        feed = [FeedEntry(message=entry.message, sender=entry.node_index, timestamp=datetime.now()) for entry in self.network.feed]
+        feed = [FeedEntry(message=entry.message, sender=entry.node_index, timestamp=entry.timestamp) for entry in self.network.feed]
         return WorldState(
             belief_vector=beliefs,
             connectivity_matrix=matrix,

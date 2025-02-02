@@ -1,6 +1,7 @@
 """Network Class
 """
 
+from datetime import datetime
 import numpy as np
 import llm_agent
 from collections import deque
@@ -12,6 +13,10 @@ class FeedEntry:
     def __init__(self, message, node_idx):
         self.message = message
         self.node_index = node_idx
+        self.timestamp = datetime.now()
+
+    def __str__(self):
+        return f"FeedEntry(message={self.message}, node_index={self.node_index})"
 
 class Network:
     """Graph representation
