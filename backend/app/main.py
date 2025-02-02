@@ -191,12 +191,17 @@ async def get_world_state(current_user: User = Depends(get_current_user)):
     WORLD_STATE = main.get_world_state()
     return WORLD_STATE
 
+@app.get("/world/feed")
+async def get_feed(current_user: User = Depends(get_current_user)):
+    main = get_main()
+    return main.network.feed
+
 @app.post("/chat")
 async def send_chat(
     chat: ChatMessage,
     current_user: User = Depends(get_current_user)
 ):
-    """
+    """ 
     Send a chat message that affects the world state
     """
     main = get_main()
