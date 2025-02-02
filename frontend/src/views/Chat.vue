@@ -362,7 +362,7 @@ onUnmounted(() => {
   top: 50%;
   transform: translateY(-50%);
   font-size: 12px;
-  color: #eee;
+  color: black;
 }
 
 :deep(.t-textarea) {
