@@ -97,8 +97,8 @@ class Network:
     def cluster(self):
         k1 = []; k2 = []; k3 = []
         for i, node in enumerate(self.nodes):
-            if node.certainty() < 0.33: k1.append(i)
-            elif node.certainty() >= 0.33 and node.certainty() < 0.66: k2.append(i)
+            if node.get_certainty() < 0.33: k1.append(i)
+            elif node.get_certainty() >= 0.33 and node.get_certainty() < 0.66: k2.append(i)
             else: k3.append(i)
 
         self.form_connections(k1)
@@ -116,7 +116,7 @@ class Network:
     def remove_connections(self, k1, k2):
         for i in k1:
             for j in k2:
-                if not self.adjusted_matrix[i][j]: continue
+                if not self.adjacency_matrix[i][j]: continue
                 if np.random.randint(0, 100) > 50:
                     self.adjacency_matrix[i][j] = 0
 

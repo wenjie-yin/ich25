@@ -33,13 +33,13 @@ propegate_graph:
 class MainLoop:
 
     def __init__(self):
-        self.update_delay = 1
+        self.update_delay = 0.1
         self.n_nodes = 10
         # Add a lock for network updates
         self.update_lock = threading.Lock()
 
         # Initialise network
-        self.network = Network(self.n_nodes, belief="The earth is flat")
+        self.network = Network(self.n_nodes, belief="The COVID-19 vaccine is harmful to humans.")
 
         # Exit flag
         self.terminate = False
@@ -66,6 +66,7 @@ class MainLoop:
             if self.update_lock.acquire(blocking=False):
                 try:
                     self.network.update_with_agent_crosstalk()
+                    self.network.cluster()
                 finally:
                     self.update_lock.release()
 
@@ -73,6 +74,7 @@ class MainLoop:
         """Send message from user to update network"""
         with self.update_lock:  # Acquire lock during user updates
             self.network.update_with_user_input(msg)
+            self.network.cluster()
         # Lock automatically released when block exits
 
     def get_world_state(self) -> WorldState:
