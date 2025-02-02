@@ -5,9 +5,9 @@
         <t-space direction="vertical" size="large">
           <h1 class="title">Welcome back</h1>
           <p class="subtitle">Log in to your account</p>
-          <t-form ref="form" :data="formData" :rules="rules" @submit="onSubmit" :require-mark="false">
+          <t-form ref="form" :data="formData" :rules="rules" @submit="onSubmit" :required-mark="false">
             <t-form-item name="username">
-              <label class="input-label">Email address</label>
+              <label class="input-label">Email</label>
               <t-input
                 v-model="formData.username"
                 size="large"
@@ -78,7 +78,7 @@ const onSubmit = async ({ validateResult, firstError }: { validateResult: boolea
     formParams.append('username', formData.value.username)
     formParams.append('password', formData.value.password)
 
-    const response = await axios.post('http://0.0.0.0:8000/token', 
+    const response = await axios.post('/api/token', 
       formParams,
       {
         timeout: 5000,
@@ -161,6 +161,7 @@ const onSubmit = async ({ validateResult, firstError }: { validateResult: boolea
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
+  width: 70px;
   color: rgba(0, 0, 0, 0.8);
 }
 
@@ -180,6 +181,10 @@ const onSubmit = async ({ validateResult, firstError }: { validateResult: boolea
 :deep(.t-input__inner:focus) {
   border-color: #000000;
   box-shadow: none;
+}
+
+:deep(.t-form__controls) {
+  margin-left: 0 !important;
 }
 
 .submit-btn {

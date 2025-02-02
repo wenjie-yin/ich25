@@ -5,7 +5,15 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   server: {
-    host: true, // Listen on all local IPs
-    port: 3000, // You can change this port if needed
+    host: true,
+    port: 3000,
+    // Add proxy configuration
+    proxy: {
+      '/api': {
+        target: 'http://0.0.0.0:8000', // Your backend port
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   }
 })

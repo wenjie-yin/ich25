@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "graphology": "^0.26.0",
+    "sigma": "^3.0.1",
     "tdesign-vue-next": "^1.10.7",
     "vue": "^3.5.13",
     "vue-router": "^4.0.13"
