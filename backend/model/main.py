@@ -35,8 +35,8 @@ class MainLoop:
     def __init__(self):
         self.update_delay = 0.1
         self.n_nodes = 10
-        # Add a lock for network updates
-        self.update_lock = threading.Lock()
+        # Change to async lock
+        self.update_lock = asyncio.Lock()
 
         # Initialise network
         self.network = Network(self.n_nodes, belief="The COVID-19 vaccine is harmful to humans.")
@@ -51,10 +51,7 @@ class MainLoop:
         self.terminate = False
         
         def run_async_loop():
-            self._loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self._loop)
-            self._task = self._loop.create_task(self.game_loop())
-            self._loop.run_forever()
+            asyncio.run(self.game_loop())
 
         self._thread = threading.Thread(target=run_async_loop)
         self._thread.daemon = True
@@ -73,20 +70,13 @@ class MainLoop:
         """Async game loop"""
         while not self.terminate:
             await asyncio.sleep(self.update_delay)
-            if self.update_lock.acquire(blocking=False):
-                try:
-                    await self.network.update_with_agent_crosstalk()
-                    self.network.cluster()
-                finally:
-                    self.update_lock.release()
-            # Schedule the next iteration
-            if not self.terminate:
-                self._loop.create_task(self.game_loop())
-            return
+            async with self.update_lock:
+                await self.network.update_with_agent_crosstalk()
+                self.network.cluster()
 
     async def send_user_message(self, msg: str):
         """Send message from user to update network"""
-        with self.update_lock:
+        async with self.update_lock:
             await self.network.update_with_user_input(msg)
             self.network.cluster()
 
