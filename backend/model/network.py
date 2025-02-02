@@ -48,7 +48,7 @@ class Network:
 
     def filter_feed(self, node_index) -> deque:
         adjacent = self.get_adjacent(node_index)
-        return list(filter(lambda x: x.node_index == node_index, self.feed))[:self.N]
+        return list(filter(lambda x: x.node_index == node_index, self.feed))[:-self.N]
     
     def get_adjacent(self, node_index):
         adjacencies = self.adjacency_matrix[node_index]
@@ -66,7 +66,7 @@ class Network:
         """
         for i, node in enumerate(self.nodes):
             node_feed = self.filter_feed(i)
-            message = self.llm_agent.write_post(self.belief, node.get_certainty())# [f.message for f in node_feed], True)
+            message = self.llm_agent.write_post(self.belief, node.get_certainty())#, [f.message for f in node_feed], True)
             if message is not None:
                 self.feed.append(FeedEntry(message, i))
 
