@@ -8,6 +8,7 @@
         <div class="message-list">
           <div v-for="(message, index) in messages" :key="index" class="message-item">
             <div class="message-time">{{ message.time }}</div>
+            <div class="messege-sender">{{ message.sender }}</div>
             <div class="message-content">{{ message.content }}</div>
           </div>
         </div>
@@ -75,6 +76,7 @@ import GraphVisualization from '../components/GraphVisualization.vue'
 interface Message {
   content: string
   time: string
+  sender: string
 }
 
 interface WorldState {
@@ -119,7 +121,8 @@ const sendMessage = async () => {
     // Add message to history
     messages.value.unshift({
       content: newMessage.value.trim(),
-      time: new Date().toLocaleTimeString()
+      time: new Date().toLocaleTimeString(),
+      sender: 'Me'
     })
     
     const m = newMessage.value.trim()

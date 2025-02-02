@@ -122,21 +122,56 @@ const updateGraph = () => {
   const n = props.matrix.length
   const radius = 5
 
-  // Ensure canvas size matches container
-  if (particleCanvas.value && sigmaContainer.value) {
-    particleCanvas.value.width = sigmaContainer.value.clientWidth
-    particleCanvas.value.height = sigmaContainer.value.clientHeight
-  }
-
-  // Create nodes in a circle
+  // Calculate initial positions in a circle
+  const positions = []
   for (let i = 0; i < n; i++) {
     const angle = (i * 2 * Math.PI) / n
     const x = radius * Math.cos(angle)
     const y = radius * Math.sin(angle)
+    positions.push({ x, y })
+  }
+
+  // Apply force-directed layout
+  const iterations = 50
+  const springLength = 2
+  const springStrength = 0.1
+  
+  for (let iter = 0; iter < iterations; iter++) {
+    // Calculate forces
+    const forces = positions.map(() => ({ x: 0, y: 0 }))
     
+    // Apply spring forces based on connectivity weights
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        if (i !== j) {
+          const weight = props.matrix[i][j] || props.matrix[j][i] || 0
+          if (weight > 0) {
+            const dx = positions[j].x - positions[i].x
+            const dy = positions[j].y - positions[i].y
+            const distance = Math.sqrt(dx * dx + dy * dy)
+            const force = (distance - springLength) * springStrength * weight
+            
+            forces[i].x += (dx / distance) * force
+            forces[i].y += (dy / distance) * force
+            forces[j].x -= (dx / distance) * force
+            forces[j].y -= (dy / distance) * force
+          }
+        }
+      }
+    }
+    
+    // Apply forces to positions
+    for (let i = 0; i < n; i++) {
+      positions[i].x += forces[i].x
+      positions[i].y += forces[i].y
+    }
+  }
+
+  // Create nodes with calculated positions
+  for (let i = 0; i < n; i++) {
     graph.addNode(`n${i}`, {
-      x,
-      y,
+      x: positions[i].x,
+      y: positions[i].y,
       size: 8,
       label: `Node ${i} (${props.beliefs[i].toFixed(2)})`,
       color: beliefToColor(props.beliefs[i]),
@@ -152,13 +187,19 @@ const updateGraph = () => {
       if (weight > 0) {
         // Convert weight to grayscale (0 = black, 255 = white)
         const intensity = Math.round(255 * weight)
-        const color = `rgb(${intensity}, ${intensity}, ${intensity})`
+        const color = `rgb(${intensity}, ${intensity}, ${intensity}, ${weight > 0 ? 1 : 0})`
         graph.addEdge(`n${i}`, `n${j}`, {
           size: 2,
           color: color
         })
       }
     }
+  }
+
+  // Ensure canvas size matches container
+  if (particleCanvas.value && sigmaContainer.value) {
+    particleCanvas.value.width = sigmaContainer.value.clientWidth
+    particleCanvas.value.height = sigmaContainer.value.clientHeight
   }
 
   // Store current camera state if sigma exists
