@@ -83,6 +83,24 @@ class Network:
         matrix = self.adjacency_matrix.tolist()
         beliefs = [ node.get_certainty() for node in self.nodes ]
         return matrix, beliefs
+
+    def cluster(self):
+        k1 = []; k2 = []; k3 = []
+        for i, node in enumerate(self.nodes):
+            if node.certainty() < 0.33: k1.append((node,i))
+            elif node.certainty() >= 0.33 and node.certainty() < 0.66: k2.append((node,1))
+            else: k3.append((node,i))
+
+        self.form_connections(k1)
+        self.form_connections(k2)
+        self.form_connections(k3)
+
+    def form_connections(self, cluster):
+        for i, node in cluster:
+            for j, other in cluster:
+                if i == j or self.adjacency_matrix[i][j]: continue
+                if np.random.randint(0, 100) > 50:
+                    self.adjacency_matrix[i][j] = 1
  
 
 class Node:
