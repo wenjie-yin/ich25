@@ -33,6 +33,8 @@ class MainLoop:
     def __init__(self):
         self.update_delay = 1
         self.n_nodes = 10
+        # Add a lock for network updates
+        self.update_lock = threading.Lock()
 
         # Initialise network
         self.network = Network(self.n_nodes, belief="The earth is flat")
@@ -58,12 +60,18 @@ class MainLoop:
     def game_loop(self):
         while not self.terminate:
             time.sleep(self.update_delay)
-            # self.network.update_with_agent_crosstalk()
-    
+            # Only update crosstalk if lock is available
+            if self.update_lock.acquire(blocking=False):
+                try:
+                    self.network.update_with_agent_crosstalk()
+                finally:
+                    self.update_lock.release()
+
     async def send_user_message(self, msg: str):
-        """Send message from user to update network
-        """
-        self.network.update_with_user_input(msg)
+        """Send message from user to update network"""
+        with self.update_lock:  # Acquire lock during user updates
+            self.network.update_with_user_input(msg)
+        # Lock automatically released when block exits
 
     def get_world_state(self) -> WorldState:
         matrix, beliefs = self.network.serialise()

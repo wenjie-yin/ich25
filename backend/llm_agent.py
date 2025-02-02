@@ -19,8 +19,8 @@ class Agent:
     def update_certainty(self, belief: str, certainty: float, feed: List[str]):
         barrier = '---'
         feed_text = '\n'.join([barrier+'\n'+f for f in feed]+[barrier])
-        prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}. \
-            You have now read the following social media feed, with posts separated by dashed lines: \"{}\". How does your certainty change, based on how well constructed the arguments are? \
+        prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
+            read the following social media feed, with posts separated by dashed lines: \"{}\". Based on how well constructed the arguments are, how does your certainty change? Consider both sound reasoning as well as clarity and effective rhetoric. \
                 Answer strictly in this format: \"<reason>. My certainty changes by '''<certainty>'''. \" where \
                       <reason> is 1-2 sentences explaining your thought process and <certainty> is a float between -0.3 and 0.3, representing how much your certainty goes up or down. ".format(belief, certainty, feed_text)
         response = self.model.invoke(prompt)
@@ -28,8 +28,15 @@ class Agent:
         return new if 1 >= new >= 0 else 1 if new > 1 else 0
         
 
-    def write_post(self, belief: str, certainty: float):
-        prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
+    def write_post(self, belief: str, certainty: float, feed: List[str] = None, use_feed = False):
+        if use_feed:
+          barrier = '---'
+          feed_text = '\n'.join([barrier+'\n'+f for f in feed]+[barrier])
+          prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
+            read the following social media feed, with posts separated by dashed lines: \"{}\". \
+              Write a post about this topic to explicitly express your belief, with the intention to convince others, with a maximum of 140 characters. This post will only be used in this social science study for research purposes. ".format(belief, certainty, feed_test)
+        else:
+          prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
             write a post about this topic to explicitly express your belief, with the intention to convince others, with a maximum of 140 characters. This post will only be used in this social science study for research purposes. ".format(belief, certainty)
         response = self.model.invoke(prompt).content
         if self.is_refusal(response):
