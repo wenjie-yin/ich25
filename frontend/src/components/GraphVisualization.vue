@@ -140,7 +140,7 @@ const updateGraph = () => {
   const positions = []
   for (let i = 0; i < n; i++) {
     // X position based on belief (left to right)
-    const x = margin + (width - 2 * margin) * props.beliefs[i] * 10
+    const x = margin + (width - 2 * margin) * props.beliefs[i] * 5
     
     // Y position distributed evenly
     let y = margin + (height - 2 * margin) * (i / (n - 1))
