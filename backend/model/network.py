@@ -11,7 +11,7 @@ from model.dynamics import Stochastic
 class FeedEntry:
     def __init__(self, message, node_idx):
         self.message = message
-        self.node_index = node_index
+        self.node_index = node_idx
 
 class Network:
     """Graph representation
@@ -37,12 +37,6 @@ class Network:
         self.stochastic_network = Stochastic(self.N)
         self.adjacency_matrix = self.stochastic_network.adjacency_matrix
         self.llm_agent = llm_agent.Agent()
-<<<<<<< HEAD
-=======
-        
-        # Initialise stochastic belief propagation network
-        self.stochastic_network = Stochastic(N)
->>>>>>> main
 
     def get_certainties(self):
         return [ node.certainty for node in self.nodes ]
@@ -101,6 +95,6 @@ class Node:
     def get_certainty(self):
         return self._certainty
     
-    def set_certainty(value):
+    def set_certainty(self, value):
         self._certainty = value
 
