@@ -217,7 +217,7 @@ async def send_chat(
     
     # Update the world state based on the chat message
     WORLD_STATE.current_message = chat.message
-    main.send_user_message(chat.message)
+    await main.send_user_message(chat.message)
     
     # Example logic: Update belief vector based on message
     new_belief = np.array(WORLD_STATE.belief_vector)
