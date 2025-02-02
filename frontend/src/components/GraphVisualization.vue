@@ -131,15 +131,25 @@ const updateGraph = () => {
   particles = []
   const graph = new Graph()
   const n = props.matrix.length
-  const radius = 5
+  // Define layout boundaries
+  const margin = 2  // Keep some space from edges
+  const width = 1  // Total width of layout space
+  const height = 6  // Total height of layout space
 
-  // Calculate initial positions in a circle
+  // Calculate positions based on beliefs
   const positions = []
   for (let i = 0; i < n; i++) {
-    const angle = (i * 2 * Math.PI) / n
-    const x = radius * Math.cos(angle)
-    const y = radius * Math.sin(angle)
-    positions.push({ x, y })
+    // X position based on belief (left to right)
+    const x = margin + (width - 2 * margin) * props.beliefs[i]
+    
+    // Y position distributed evenly
+    let y = margin + (height - 2 * margin) * (i / (n - 1))
+    // Center y if only one node
+    if (n === 1) y = height / 2
+    
+    // Offset alternate nodes for better edge visibility
+    const xOffset = (i % 2) * 0.5
+    positions.push({ x: x - width/2 + xOffset, y: y - height/2 })
   }
 
   // Apply force-directed layout
@@ -162,9 +172,10 @@ const updateGraph = () => {
             const distance = Math.sqrt(dx * dx + dy * dy)
             const force = (distance - springLength) * springStrength * weight
             
-            forces[i].x += (dx / distance) * force
+            // Limit horizontal movement to maintain belief-based positioning
+            forces[i].x += (dx / distance) * force * 0.1  // Reduced horizontal force
             forces[i].y += (dy / distance) * force
-            forces[j].x -= (dx / distance) * force
+            forces[j].x -= (dx / distance) * force * 0.1  // Reduced horizontal force
             forces[j].y -= (dy / distance) * force
           }
         }
