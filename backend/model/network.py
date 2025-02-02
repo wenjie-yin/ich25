@@ -2,10 +2,10 @@
 """
 
 import numpy as np
-import backend.llm_agent as llm_agent
+import llm_agent
 from collections import deque
-from backend.app.main import WorldState
-from backend.model.dynamics import Stochastic
+from app import WorldState
+from model.dynamics import Stochastic
 
 
 class FeedEntry:
@@ -37,6 +37,12 @@ class Network:
         self.stochastic_network = Stochastic(self.N)
         self.adjacency_matrix = self.stochastic_network.adjacency_matrix
         self.llm_agent = llm_agent.Agent()
+<<<<<<< HEAD
+=======
+        
+        # Initialise stochastic belief propagation network
+        self.stochastic_network = Stochastic(N)
+>>>>>>> main
 
     def get_certainties(self):
         return [ node.certainty for node in self.nodes ]

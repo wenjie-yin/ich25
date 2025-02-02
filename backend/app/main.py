@@ -7,6 +7,8 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 import logging
 import numpy as np
+from model.main import MainLoop
+from app import WorldState
 from fastapi.middleware.cors import CORSMiddleware
 
 # Set up logging
@@ -32,6 +34,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
+main = MainLoop()
+
 # Add this after creating the FastAPI app instance
 app.add_middleware(
     CORSMiddleware,
@@ -56,11 +60,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
-
-class WorldState(BaseModel):
-    belief_vector: List[float]  # Level of belief for each node (0 to 1)
-    connectivity_matrix: List[List[int]]  # Adjacency matrix for node connections
-    current_message: str = ""
 
 class ChatMessage(BaseModel):
     message: str
@@ -190,12 +189,12 @@ async def send_chat(
     Send a chat message that affects the world state
     """
     global WORLD_STATE
-    
     # Log the chat message
     logger.info(f"User {current_user.username} sent message: {chat.message}")
     
     # Update the world state based on the chat message
     WORLD_STATE.current_message = chat.message
+    main.send_user_message(chat.message)
     
     # Example logic: Update belief vector based on message
     new_belief = np.array(WORLD_STATE.belief_vector)

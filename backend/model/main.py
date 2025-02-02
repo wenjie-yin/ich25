@@ -1,6 +1,8 @@
 import time
-from backend.app.main import WorldState
-from backend.model.network import Network
+import json
+import asyncio
+from app import WorldState
+from model.network import Network
 
 """
 initialise: n agents with random belief states and one player in graphs with adjacent connections (fully connected for now)
@@ -24,8 +26,6 @@ spread_belief:
 propegate_graph:
     propegate user impact
 """
-
-
 
 class MainLoop:
 
