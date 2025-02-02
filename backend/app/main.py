@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import asyncio
 
 # Add the project root to Python path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -38,13 +39,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize MainLoop with context manager
-    main = MainLoop().__enter__()
-    # Store the main instance in app.state
+    main = MainLoop()
     app.state.main = main
-    yield  # Just yield without any value
+    # Start the game loop as a background task
+    asyncio.create_task(main.game_loop())
+    yield
     # Cleanup
-    main.__exit__(None, None, None)
+    main.terminate = True
 
 app = FastAPI(
     title="My FastAPI App",
