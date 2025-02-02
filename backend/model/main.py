@@ -43,39 +43,52 @@ class MainLoop:
 
         # Exit flag
         self.terminate = False
-        self._thread = None
+        self._task = None
+        self._loop = None
 
     def __enter__(self):
-        """Start the game loop in a separate thread when entering the context"""
+        """Start the game loop in a new event loop in a separate thread"""
         self.terminate = False
-        self._thread = threading.Thread(target=self.game_loop)
-        self._thread.daemon = True  # Make thread daemon so it exits when main thread exits
+        
+        def run_async_loop():
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+            self._task = self._loop.create_task(self.game_loop())
+            self._loop.run_forever()
+
+        self._thread = threading.Thread(target=run_async_loop)
+        self._thread.daemon = True
         self._thread.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Clean up when exiting the context"""
         self.terminate = True
+        if self._loop:
+            self._loop.call_soon_threadsafe(self._loop.stop)
         if self._thread:
             self._thread.join()
 
-    def game_loop(self):
+    async def game_loop(self):
+        """Async game loop"""
         while not self.terminate:
-            time.sleep(self.update_delay)
-            # Only update crosstalk if lock is available
+            await asyncio.sleep(self.update_delay)
             if self.update_lock.acquire(blocking=False):
                 try:
-                    self.network.update_with_agent_crosstalk()
+                    await self.network.update_with_agent_crosstalk()
                     self.network.cluster()
                 finally:
                     self.update_lock.release()
+            # Schedule the next iteration
+            if not self.terminate:
+                self._loop.create_task(self.game_loop())
+            return
 
     async def send_user_message(self, msg: str):
         """Send message from user to update network"""
-        with self.update_lock:  # Acquire lock during user updates
-            self.network.update_with_user_input(msg)
+        with self.update_lock:
+            await self.network.update_with_user_input(msg)
             self.network.cluster()
-        # Lock automatically released when block exits
 
     def get_world_state(self) -> WorldState:
         matrix, beliefs = self.network.serialise()

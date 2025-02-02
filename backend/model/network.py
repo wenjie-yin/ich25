@@ -7,6 +7,8 @@ import llm_agent
 from collections import deque
 from app import WorldState
 from model.dynamics import Stochastic
+import asyncio
+from typing import List
 
 
 class FeedEntry:
@@ -54,26 +56,53 @@ class Network:
         adjacencies = self.adjacency_matrix[node_index]
         return [ i for i, w in zip(np.arange(0, self.N), adjacencies) if i != node_index and w == 1 ]
     
-    def update_with_user_input(self, message: str):
-        """Update agent certaintys from user's message
-        """
+    async def update_with_user_input(self, message: str):
+        """Update agent certaintys from user's message asynchronously"""
         self.feed.append(FeedEntry(message, None))
-        for i, node in enumerate(self.nodes):
-            node._certainty = self.llm_agent.update_certainty(self.belief, node.get_certainty(), [message])
+        
+        # Create tasks for all agents to process the message in parallel
+        tasks = [
+            self.llm_agent.update_certainty(self.belief, node.get_certainty(), [message])
+            for node in self.nodes
+        ]
+        
+        # Wait for all updates to complete
+        results = await asyncio.gather(*tasks)
+        
+        # Update certainties with results
+        for node, new_certainty in zip(self.nodes, results):
+            node._certainty = new_certainty
 
-    def update_with_agent_crosstalk(self):
-        """Make agents talk to each other to update their beliefs
-        """
-        for i, node in enumerate(self.nodes):
-            #node_feed = self.filter_feed(i)
-            message = self.llm_agent.write_post(self.belief, node.get_certainty())#, [f.message for f in node_feed], True)
+    async def update_with_agent_crosstalk(self):
+        """Make agents talk to each other to update their beliefs asynchronously"""
+        # First phase: Generate messages in parallel
+        message_tasks = [
+            self.llm_agent.write_post(self.belief, node.get_certainty())
+            for node in self.nodes
+        ]
+        messages = await asyncio.gather(*message_tasks)
+        
+        # Add valid messages to feed
+        for i, message in enumerate(messages):
             if message is not None:
                 self.feed.append(FeedEntry(message, i))
 
-        #update only after all nodes have written
-        for i, node in enumerate(self.nodes):
-            node_feed = self.filter_feed(i)
-            node._certainty = self.llm_agent.update_certainty(self.belief, node.get_certainty(), [f.message for f in node_feed])
+        # Second phase: Update beliefs based on feed in parallel
+        update_tasks = [
+            self.llm_agent.update_certainty(
+                self.belief, 
+                node.get_certainty(), 
+                [f.message for f in self.filter_feed(i)]
+            )
+            for i, node in enumerate(self.nodes)
+        ]
+        
+        # Wait for all updates to complete
+        new_certainties = await asyncio.gather(*update_tasks)
+        
+        # Update all nodes with new certainties
+        for node, new_certainty in zip(self.nodes, new_certainties):
+            node._certainty = new_certainty
 
     def update_with_random_interaction(self):
         """Update certaintys through exchange of information
