@@ -220,6 +220,11 @@ async def send_chat(
         "new_state": WORLD_STATE
     }
 
+@app.get("/belief")
+async def get_belief(current_user: User = Depends(get_current_user)):
+    main = get_main()
+    return main.network.belief
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
