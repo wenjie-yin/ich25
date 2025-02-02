@@ -24,11 +24,7 @@ class Agent:
                 Answer strictly in this format: \"<reason>. My certainty changes by '''<certainty>'''. \" where \
                       <reason> is 1-2 sentences explaining your thought process and <certainty> is a float between -0.3 and 0.3, representing how much your certainty goes up or down. ".format(belief, certainty, feed_text)
         response = self.model.invoke(prompt)
-        
-        try:
-            new = certainty + float(response.content.split("'''")[1])
-        except:
-            return certainty
+        new = certainty + float(response.content.split("'''")[1])
         return new if 1 >= new >= 0 else 1 if new > 1 else 0
         
 

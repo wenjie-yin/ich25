@@ -133,14 +133,14 @@ const updateGraph = () => {
   const n = props.matrix.length
   // Define layout boundaries
   const margin = 2  // Keep some space from edges
-  const width = 1  // Total width of layout space
+  const width = 20  // Total width of layout space
   const height = 6  // Total height of layout space
 
   // Calculate positions based on beliefs
   const positions = []
   for (let i = 0; i < n; i++) {
     // X position based on belief (left to right)
-    const x = margin + (width - 2 * margin) * props.beliefs[i]
+    const x = margin + (width - 2 * margin) * props.beliefs[i] * 10
     
     // Y position distributed evenly
     let y = margin + (height - 2 * margin) * (i / (n - 1))
@@ -209,7 +209,7 @@ const updateGraph = () => {
       if (weight > 0) {
         // Convert weight to grayscale (0 = black, 255 = white)
         const intensity = Math.round(255 * weight)
-        const color = `rgb(${intensity}, ${intensity}, ${intensity}, ${weight > 0 ? 1 : 0})`
+        const color = `rgb(${intensity}, ${intensity}, ${intensity})`
         graph.addEdge(`n${i}`, `n${j}`, {
           size: 2,
           color: color
