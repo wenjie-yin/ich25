@@ -7,8 +7,8 @@
         <h2>Message History</h2>
         <div class="message-list">
           <div v-for="(message, index) in messages" :key="index" class="message-item">
-            <!-- <div class="message-time">{{ message.time }}</div> -->
-            <div class="messege-sender">{{ message.sender }}</div>
+            <div class="message-time">{{ message.time }}</div>
+            <div class="messege-sender">Node_{{ message.sender }}</div>
             <div class="message-content">{{ message.content }}</div>
           </div>
         </div>
@@ -85,6 +85,7 @@ interface WorldState {
   current_message: string
 }
 
+const userMessages = ref<Message[]>([])
 const newMessage = ref('')
 const messages = ref<Message[]>([])
 const worldState = ref<WorldState>({
@@ -109,6 +110,18 @@ const beliefToColor = (belief: number): string => {
   return `rgb(${r}, ${g}, ${b})`
 }
 
+// Helper function to format date to ISO-like format
+const formatDateTime = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  const milliseconds = String(date.getMilliseconds()).padStart(3, '0')
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`
+}
+
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return
 
@@ -119,9 +132,15 @@ const sendMessage = async () => {
       return
     }
     // Add message to history
+    userMessages.value.unshift({
+      content: newMessage.value.trim(),
+      time: formatDateTime(new Date()),
+      sender: 'Me'
+    })
+    
     messages.value.unshift({
       content: newMessage.value.trim(),
-      time: new Date().toLocaleTimeString(),
+      time: formatDateTime(new Date()),
       sender: 'Me'
     })
     
@@ -164,13 +183,15 @@ const fetchWorldState = async () => {
 
     worldState.value = response.data
     const feeds = response.data.feed
-    for (var feed of feeds) {
-      messages.value.unshift({
-        content: feed.message,
-        time: feed.timeStamp,
-        sender: feed.sender
-      })
-    }
+    messages.value = feeds.filter((feed: any) => feed.sender).map((feed: any) => ({
+      content: feed.message,
+      time: feed.timestamp,
+      sender: feed.sender
+    }))
+    // Merge and sort userMessages with messages from the feed
+    messages.value = [...messages.value, ...userMessages.value].sort((a, b) => {
+      return (new Date(b.time).getTime() - new Date(a.time).getTime())
+    })
   } catch (error) {
     console.error('Failed to fetch world state:', error)
     // Keep previous state on error

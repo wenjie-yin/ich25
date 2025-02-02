@@ -76,15 +76,26 @@ const animateParticles = () => {
   if (Math.random() < 0.1) {
     const edges = sigma.getGraph().edges()
     if (edges.length > 0) {
-      const randomEdge = edges[Math.floor(Math.random() * edges.length)]
-      const [source, target] = sigma.getGraph().extremities(randomEdge)
-      const sourceIdx = parseInt(source.slice(1))
-      const targetIdx = parseInt(target.slice(1))
-      const weight = props.matrix[sourceIdx][targetIdx] || props.matrix[targetIdx][sourceIdx]
+      // Create a weighted edge set for random selection
+      const weightedEdges = new Set()
+      edges.forEach((edge: any) => {
+        const [source, target] = sigma.getGraph().extremities(edge)
+        const sourceIdx = parseInt(source.slice(1))
+        const targetIdx = parseInt(target.slice(1))
+        const weight = props.matrix[sourceIdx][targetIdx] || props.matrix[targetIdx][sourceIdx]
+        
+        // Add edge multiple times based on weight (0-1 maps to 0-10 entries)
+        const entries = Math.round(weight * 10)
+        for (let i = 0; i < entries; i++) {
+          weightedEdges.add(edge)
+        }
+      })
       
-      if (Math.random() < weight) {
-        particles.push(createParticle(sigma.getGraph(), [source, target]))
-      }
+      // Convert set back to array for random selection
+      const edgeArray = Array.from(weightedEdges)
+      const randomEdge = edgeArray[Math.floor(Math.random() * edgeArray.length)]
+      const [source, target] = sigma.getGraph().extremities(randomEdge)
+      particles.push(createParticle(sigma.getGraph(), [source, target]))
     }
   }
 
