@@ -18,7 +18,7 @@ class Agent:
 
     def update_certainty(self, belief: str, certainty: float, feed: List[str]):
         barrier = '---'
-        feed_text = '\n'.join([barrier+'\n'+f for f in feed]+[barrier])
+        feed_text = '\n'.join([barrier+'\n'+f.message for f in feed]+[barrier])
         prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}. \
             You have now read the following social media feed, with posts separated by dashed lines: \"{}\". How does your certainty change, based on how well constructed the arguments are? \
                 Answer strictly in this format: \"<reason>. My certainty changes by <certainty>. \" where \
