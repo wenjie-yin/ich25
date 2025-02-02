@@ -156,7 +156,7 @@ const sendMessage = async () => {
 
     // Clear input after successful send
     newMessage.value = ''
-    await axios.post('http://0.0.0.0:8000/chat', 
+    await axios.post('/api/chat', 
       { message: m },
       {
         headers: {
@@ -183,7 +183,7 @@ const fetchWorldState = async () => {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    const response = await axios.get('http://0.0.0.0:8000/world', {
+    const response = await axios.get('/api/world', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -217,7 +217,7 @@ const fetchBelief = async () => {
   const token = localStorage.getItem('token')
   if (!token) return
 
-  const response = await axios.get('http://0.0.0.0:8000/belief', {
+  const response = await axios.get('/api/belief', {
     headers: { 'Authorization': `Bearer ${token}` }
   })
   belief.value = response.data
