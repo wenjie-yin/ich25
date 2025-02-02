@@ -6,7 +6,7 @@ from backend.llm_agent import Agent
 
 llm_agent = Agent()
 
-print(llm_agent.update_certainty("COVID-19 vaccine is dangerous", 0.5, ["mRNA was developed too quickly", "Vaccines are very well tested", "Ivermectin is a safer alternative"]))
+print(llm_agent.update_certainty("COVID-19 vaccine is dangerous", 0.5, ["The COVID-19 vaccine is safe"]))
 
 for i in range(10):
     certainty = i* 0.1
