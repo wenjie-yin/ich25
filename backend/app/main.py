@@ -199,7 +199,8 @@ async def get_world_state(current_user: User = Depends(get_current_user)):
     Retrieve the current state of the world matrix and last message
     """
     main = get_main()
-    return main.get_world_state()
+    WORLD_STATE = main.get_world_state()
+    return WORLD_STATE
 
 @app.post("/chat")
 async def send_chat(
