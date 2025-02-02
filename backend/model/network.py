@@ -2,16 +2,16 @@
 """
 
 import numpy as np
-import backend.llm_agent as llm_agent
+import llm_agent
 from collections import deque
-from backend.app.main import WorldState
-from backend.model.dynamics import Stochastic
+from app import WorldState
+from model.dynamics import Stochastic
 
 
 class FeedEntry:
     def __init__(self, message, node_idx):
         self.message = message
-        self.node_index = node_index
+        self.node_index = node_idx
 
 class Network:
     """Graph representation
@@ -80,7 +80,7 @@ class Network:
             self.feed.append(FeedEntry(post, node))
 
     def serialise(self):
-        matrix = self.adjacency_matrix.tolist()
+        matrix = self.adjacency_matrix.astype(int).tolist()
         beliefs = [ node.get_certainty() for node in self.nodes ]
         return matrix, beliefs
 
@@ -107,14 +107,12 @@ class Node:
     def __init__(self, initial_certainty):
         self._certainty = initial_certainty
 
-
     def get_agent(self):
         return self.agent
 
-    @property
-    def certainty():
-        return
+    def get_certainty(self):
+        return self._certainty
     
-    def set_certainty(value):
+    def set_certainty(self, value):
         self._certainty = value
 
