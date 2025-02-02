@@ -129,7 +129,9 @@ const updateGraph = () => {
       y,
       size: 8,
       label: `Node ${i} (${props.beliefs[i].toFixed(2)})`,
-      color: beliefToColor(props.beliefs[i])
+      color: beliefToColor(props.beliefs[i]),
+      labelSize: 14,
+      labelColor: '#eee'
     })
   }
 
@@ -144,6 +146,8 @@ const updateGraph = () => {
       }
     }
   }
+
+  previousCamera = { x: 0.5, y: 0.5, ratio: 1.5 }
 
   // Store current camera state if sigma exists
   if (sigma) {
@@ -165,12 +169,17 @@ const updateGraph = () => {
   if (sigmaContainer.value) {
     if (!sigma) {
       sigma = new Sigma(graph, sigmaContainer.value, {
-        defaultNodeColor: '#999',
-        defaultEdgeColor: '#ccc',
+        defaultNodeColor: '#ccc',
+        defaultEdgeColor: '#888',
+        renderLabels: true,
         renderEdgeLabels: false,
         minCameraRatio: 0.2,
         maxCameraRatio: 2,
+        labelColor: { color: '#eee' },
+        labelSize: 14,
+        labelWeight: 'bold'
       })
+
     } else {
       // Update the existing sigma instance with the new graph
       sigma.setGraph(graph)
@@ -217,8 +226,8 @@ onUnmounted(() => {
 .sigma-container {
   width: 100%;
   height: 100%;
-  background: #fff;
-  border: 1px solid #eee;
+  background: #1e1e1e;
+  border: 1px solid #444;
   border-radius: 8px;
   position: relative; /* Ensure canvas is positioned correctly */
 }

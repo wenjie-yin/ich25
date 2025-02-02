@@ -19,8 +19,7 @@
           <t-textarea
             v-model="newMessage"
             placeholder="Message..."
-            :autosize="{ minRows: 1, maxRows: 5 }"
-            @keydown.enter.prevent="sendMessage"
+            @keydown="handleKeydown"
           />
           <t-button 
             theme="primary" 
@@ -165,6 +164,13 @@ const fetchWorldState = async () => {
   }
 }
 
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    sendMessage()
+  }
+}
+
 onMounted(() => {
   // Fetch initial state
   fetchWorldState()
@@ -192,19 +198,20 @@ onUnmounted(() => {
   display: flex;
   height: 100vh;
   gap: 24px;
-  background-color: #f8f9fa;
+  background-color: #121212;
   padding: 16px;
   box-sizing: border-box;
-  position: fixed; /* Ensure container stays fixed */
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  overflow: hidden; /* Prevent any scrolling */
+  overflow: hidden;
+  color: #eee;
 }
 
 .left-column {
-  flex: 0 0 400px;
+  width: 400px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -224,7 +231,7 @@ onUnmounted(() => {
 
 .message-history {
   flex: 1;
-  background: white;
+  background: #1e1e1e;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 16px;
@@ -237,7 +244,7 @@ onUnmounted(() => {
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 16px 0;
-  color: rgba(0, 0, 0, 0.85);
+  color: #eee;
 }
 
 .message-list {
@@ -255,17 +262,20 @@ onUnmounted(() => {
 
 .message-time {
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.45);
+  color: #eee;
   margin-bottom: 4px;
 }
 
 .message-content {
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.85);
+  color: #eee;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .input-area {
-  background: white;
+  background: #1e1e1e;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 16px;
@@ -277,6 +287,9 @@ onUnmounted(() => {
 .input-container {
   position: relative;
   flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .graph-section {
@@ -289,7 +302,7 @@ onUnmounted(() => {
 
 .scoreboard {
   /* flex: 1;  */
-  background: white;
+  background: #1e1e1e;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 16px;
@@ -302,7 +315,7 @@ onUnmounted(() => {
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 16px 0;
-  color: rgba(0, 0, 0, 0.85);
+  color: #eee;
 }
 
 .belief-list {
@@ -320,7 +333,7 @@ onUnmounted(() => {
 .node-label {
   flex: 0 0 80px;
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.85);
+  color: #eee;
 }
 
 .belief-bar-container {
@@ -343,7 +356,7 @@ onUnmounted(() => {
   top: 50%;
   transform: translateY(-50%);
   font-size: 12px;
-  color: rgba(0, 0, 0, 0.85);
+  color: #eee;
 }
 
 :deep(.t-textarea) {
