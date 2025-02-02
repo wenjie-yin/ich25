@@ -111,12 +111,16 @@ const animateParticles = () => {
 }
 
 const updateGraph = () => {
-  // Clear all particles when the graph updates
   particles = []
-
   const graph = new Graph()
   const n = props.matrix.length
   const radius = 5
+
+  // Ensure canvas size matches container
+  if (particleCanvas.value && sigmaContainer.value) {
+    particleCanvas.value.width = sigmaContainer.value.clientWidth
+    particleCanvas.value.height = sigmaContainer.value.clientHeight
+  }
 
   // Create nodes in a circle
   for (let i = 0; i < n; i++) {
@@ -146,8 +150,6 @@ const updateGraph = () => {
       }
     }
   }
-
-  previousCamera = { x: 0.5, y: 0.5, ratio: 1.5 }
 
   // Store current camera state if sigma exists
   if (sigma) {
@@ -203,13 +205,15 @@ watch(() => props.beliefs, updateGraph, { deep: true })
 watch(() => props.matrix, updateGraph, { deep: true })
 
 onMounted(() => {
-  updateGraph()
-
-  // Set canvas size
+  // Set canvas size before initializing graph
   if (particleCanvas.value && sigmaContainer.value) {
     particleCanvas.value.width = sigmaContainer.value.clientWidth
     particleCanvas.value.height = sigmaContainer.value.clientHeight
   }
+
+  // Initialize with a fixed camera position
+  previousCamera = { x: 0.5, y: 0.5, ratio: 1.25 }
+  updateGraph()
 })
 
 onUnmounted(() => {
