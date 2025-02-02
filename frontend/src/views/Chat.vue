@@ -158,6 +158,7 @@ const fetchWorldState = async () => {
     })
 
     worldState.value = response.data
+    console.log(worldState.value.belief_vector, worldState.value.connectivity_matrix)
   } catch (error) {
     console.error('Failed to fetch world state:', error)
     // Keep previous state on error
