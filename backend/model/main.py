@@ -58,7 +58,7 @@ class MainLoop:
     def game_loop(self):
         while not self.terminate:
             time.sleep(self.update_delay)
-            self.network.update_with_agent_crosstalk()
+            # self.network.update_with_agent_crosstalk()
     
     async def send_user_message(self, msg: str):
         """Send message from user to update network
