@@ -54,21 +54,21 @@ class Network:
         """
         self.feed.append(FeedEntry(message, None))
         for i, node in enumerate(self.nodes):
-            node._certainty = self.llm_agent.update_certainty(self.belief, node.certainty(), [message])
+            node._certainty = self.llm_agent.update_certainty(self.belief, node.get_certainty(), [message])
 
     def update_with_agent_crosstalk(self):
         """Make agents talk to each other to update their beliefs
         """
         for i, node in enumerate(self.nodes):
             node_feed = self.filter_feed(i)
-            message = self.llm_agent.write_post(self.belief, node.certainty()) #node_feed, true)
+            message = self.llm_agent.write_post(self.belief, node.get_certainty(), node_feed, True)
             if message is not None:
                 self.feed.append(FeedEntry(message, node))
 
         #update only after all nodes have written
         for i, node in enumerate(self.nodes):
             node_feed = self.filter_feed(i)
-            node._certainty = self.llm_agent.update_certainty(self.belief, node.certainty(), node_feed)
+            node._certainty = self.llm_agent.update_certainty(self.belief, node.get_certainty(), node_feed)
 
     def update_with_random_interaction(self):
         """Update certaintys through exchange of information
@@ -117,7 +117,7 @@ class Network:
     def remove_connections(self, k1, k2):
         for i in k1:
             for j in k2:
-                if !self.adjusted_matrix[i][j]: continue
+                if not self.adjusted_matrix[i][j]: continue
                 if np.random.randint(0, 100) > 50:
                     self.adjacency_matrix[i][j] = 0
 

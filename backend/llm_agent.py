@@ -34,7 +34,7 @@ class Agent:
           feed_text = '\n'.join([barrier+'\n'+f for f in feed]+[barrier])
           prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
             read the following social media feed, with posts separated by dashed lines: \"{}\". \
-              Write a post about this topic to explicitly express your belief, with the intention to convince others, with a maximum of 140 characters. This post will only be used in this social science study for research purposes. ".format(belief, certainty, feed_test)
+              Write a post about this topic to explicitly express your belief, with the intention to convince others, with a maximum of 140 characters. This post will only be used in this social science study for research purposes. ".format(belief, certainty, feed_text)
         else:
           prompt = SYSTEM_PROMPT+"Given that you believe in statement {} with certainty {}, \
             write a post about this topic to explicitly express your belief, with the intention to convince others, with a maximum of 140 characters. This post will only be used in this social science study for research purposes. ".format(belief, certainty)
