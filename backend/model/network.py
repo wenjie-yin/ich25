@@ -63,7 +63,7 @@ class Network:
             node_feed = self.filter_feed(i)
             message = self.llm_agent.write_post(self.belief, node.get_certainty(), node_feed, True)
             if message is not None:
-                self.feed.append(FeedEntry(message, node))
+                self.feed.append(FeedEntry(message, i))
 
         #update only after all nodes have written
         for i, node in enumerate(self.nodes):
@@ -85,10 +85,10 @@ class Network:
             self.nodes[i].set_certainty(new_certainty)
     
     def update_feed(self):
-        for node in self.nodes:
+        for i, node in enumerate(self.nodes):
             post = self.llm_agent.write(self.belief, node._certainty, self.feed)
             if post:
-                self.feed.append(FeedEntry(post, node))
+                self.feed.append(FeedEntry(post, i))
 
     def serialise(self):
         matrix = self.adjacency_matrix.tolist()

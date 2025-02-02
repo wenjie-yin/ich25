@@ -4,6 +4,8 @@ import asyncio
 import threading
 from app import WorldState
 from model.network import Network
+from app import FeedEntry
+from datetime import datetime
 
 """
 initialise: n agents with random belief states and one player in graphs with adjacent connections (fully connected for now)
@@ -75,7 +77,9 @@ class MainLoop:
 
     def get_world_state(self) -> WorldState:
         matrix, beliefs = self.network.serialise()
+        feed = [FeedEntry(message=entry.message, sender=entry.node_index, timestamp=datetime.now()) for entry in self.network.feed]
         return WorldState(
             belief_vector=beliefs,
             connectivity_matrix=matrix,
+            feed=feed # Include feed in world state
         )
