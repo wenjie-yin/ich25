@@ -46,8 +46,6 @@ class Network:
         return list(filter(lambda x: x.node_index == node_index, self.feed))
     
     def get_adjacent(self, node_index):
-        idxs = np.arange(0, self.N)
-        idxs = idxs[idxs != i]
         adjacencies = self.adjacency_matrix[node_index]
         return [ i for i, w in zip(np.arange(0, self.N), adjacencies) if i != node_index and w == 1 ]
     
