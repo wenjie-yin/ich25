@@ -1,64 +1,71 @@
 <template>
   <div class="chat-container">
-    <!-- Left Column -->
-    <div class="left-column">
-      <!-- Message History -->
-      <div class="message-history">
-        <h2>Message History</h2>
-        <div class="message-list">
-          <div v-for="(message, index) in messages" :key="index" class="message-item">
-            <div class="message-time">{{ message.time }}</div>
-            <div class="messege-sender">Node_{{ message.sender }}</div>
-            <div class="message-content">{{ message.content }}</div>
+    <!-- Title Bar -->
+    <div class="title-bar">
+      <h1>{{ belief }}</h1>
+    </div>
+
+    <div class="content-container">
+      <!-- Left Column -->
+      <div class="left-column">
+        <!-- Message History -->
+        <div class="message-history">
+          <h2>Message History</h2>
+          <div class="message-list">
+            <div v-for="(message, index) in messages" :key="index" class="message-item">
+              <div class="message-time">{{ message.time }}</div>
+              <div class="messege-sender">Node_{{ message.sender }}</div>
+              <div class="message-content">{{ message.content }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="input-area">
+          <div class="input-container">
+            <t-textarea
+              v-model="newMessage"
+              placeholder="Message..."
+              @keydown="handleKeydown"
+            />
+            <t-button 
+              theme="primary" 
+              class="send-button"
+              :disabled="!newMessage.trim()"
+              @click="sendMessage"
+            >
+              Send
+            </t-button>
           </div>
         </div>
       </div>
 
-      <!-- Message Input -->
-      <div class="input-area">
-        <div class="input-container">
-          <t-textarea
-            v-model="newMessage"
-            placeholder="Message..."
-            @keydown="handleKeydown"
+      <!-- Right Column -->
+      <div class="right-column">
+        <!-- Graph Visualization -->
+        <div class="graph-section">
+          <GraphVisualization 
+            :beliefs="worldState.belief_vector"
+            :matrix="worldState.connectivity_matrix"
           />
-          <t-button 
-            theme="primary" 
-            class="send-button"
-            :disabled="!newMessage.trim()"
-            @click="sendMessage"
-          >
-            Send
-          </t-button>
         </div>
-      </div>
-    </div>
 
-    <!-- Right Column -->
-    <div class="right-column">
-      <!-- Graph Visualization -->
-      <div class="graph-section">
-        <GraphVisualization 
-          :beliefs="worldState.belief_vector"
-          :matrix="worldState.connectivity_matrix"
-        />
-      </div>
-
-      <!-- Scoreboard -->
-      <div class="scoreboard">
-        <h2>Node Beliefs</h2>
-        <div class="belief-list">
-          <div v-for="(belief, index) in worldState.belief_vector" :key="index" class="belief-item">
-            <div class="node-label">Node {{ index }}</div>
-            <div class="belief-bar-container">
-              <div 
-                class="belief-bar" 
-                :style="{ 
-                  width: `${belief * 100}%`,
-                  backgroundColor: beliefToColor(belief)
-                }"
-              ></div>
-              <span class="belief-value">{{ (belief * 100).toFixed(1) }}%</span>
+        <!-- Scoreboard -->
+        <div class="scoreboard">
+          <h2>Node Beliefs</h2>
+          <div class="belief-list">
+            <div v-for="(belief, index) in worldState.belief_vector" :key="index" class="belief-item">
+              <div class="node-label">Node {{ index }}</div>
+              <div class="belief-bar-container">
+                <div 
+                  class="belief-bar" 
+                  :style="{ 
+                    width: `${belief * 100}%`,
+                    backgroundColor: beliefToColor(belief)
+                  }"
+                ></div>
+                <span class="belief-value">{{ (belief * 100).toFixed(1) }}%</span>
+              </div>
             </div>
           </div>
         </div>
@@ -85,6 +92,7 @@ interface WorldState {
   current_message: string
 }
 
+const belief = ref<String>('')
 const userMessages = ref<Message[]>([])
 const newMessage = ref('')
 const messages = ref<Message[]>([])
@@ -205,9 +213,20 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 }
 
+const fetchBelief = async () => {
+  const token = localStorage.getItem('token')
+  if (!token) return
+
+  const response = await axios.get('http://0.0.0.0:8000/belief', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  })
+  belief.value = response.data.belief
+}
+
 onMounted(() => {
   // Fetch initial state
   fetchWorldState()
+  fetchBelief()
   
   // Start polling every 3 seconds
   pollInterval = window.setInterval(fetchWorldState, 3000)
@@ -230,8 +249,8 @@ onUnmounted(() => {
 
 .chat-container {
   display: flex;
+  flex-direction: column;
   height: 100vh;
-  gap: 24px;
   background-color: #121212;
   padding: 16px;
   box-sizing: border-box;
@@ -244,13 +263,38 @@ onUnmounted(() => {
   color: #eee;
 }
 
+.title-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 16px;
+  height: 64px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.title-bar h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #eee;
+  margin: 0;
+}
+
+/* Main content container */
+.content-container {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+}
+
 .left-column {
   width: 400px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100%;
-  min-height: 0; /* Allow flex items to shrink below content size */
+  min-height: 0;
 }
 
 .right-column {
