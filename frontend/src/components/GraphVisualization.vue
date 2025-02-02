@@ -78,7 +78,13 @@ const animateParticles = () => {
     if (edges.length > 0) {
       const randomEdge = edges[Math.floor(Math.random() * edges.length)]
       const [source, target] = sigma.getGraph().extremities(randomEdge)
-      particles.push(createParticle(sigma.getGraph(), [source, target]))
+      const sourceIdx = parseInt(source.slice(1))
+      const targetIdx = parseInt(target.slice(1))
+      const weight = props.matrix[sourceIdx][targetIdx] || props.matrix[targetIdx][sourceIdx]
+      
+      if (Math.random() < weight) {
+        particles.push(createParticle(sigma.getGraph(), [source, target]))
+      }
     }
   }
 
@@ -142,10 +148,14 @@ const updateGraph = () => {
   // Add edges based on matrix
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      if (props.matrix[i][j] === 1) {
+      const weight = props.matrix[i][j]
+      if (weight > 0) {
+        // Convert weight to grayscale (0 = black, 255 = white)
+        const intensity = Math.round(255 * weight)
+        const color = `rgb(${intensity}, ${intensity}, ${intensity})`
         graph.addEdge(`n${i}`, `n${j}`, {
           size: 2,
-          color: '#666'
+          color: color
         })
       }
     }
